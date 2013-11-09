@@ -6,8 +6,13 @@ int uinput_init(void) {
 	int fd, i, r;
 	struct uinput_user_dev uidev;
 
+#ifndef UINPUT_NOAXIS
 	int button[] = {BTN_A, BTN_B, BTN_START, BTN_SELECT};
 	int axis[]   = {ABS_X, ABS_Y};
+#else
+	int button[] = {BTN_A, BTN_B, BTN_START, BTN_SELECT, 
+                        BTN_0, BTN_1, BTN_2,     BTN_3};
+#endif
 
 	// XXX is /dev/input/uinput on some systems ?
 	fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
@@ -39,6 +44,7 @@ int uinput_init(void) {
 		}
 	}
 
+#ifndef UINPUT_NOAXIS
 	// Add the axes
 	for(i = 0; i < sizeof(axis) / sizeof(int); i++) {
 		r = ioctl(fd, UI_SET_ABSBIT, axis[i]);
@@ -51,6 +57,7 @@ int uinput_init(void) {
 		uidev.absmin[axis[i]] = -1;
 		uidev.absmax[axis[i]] =  1;
 	}
+#endif
 
 	// Initialize the device
 	memset(&uidev, 0, sizeof(uidev));
@@ -133,6 +140,7 @@ void uinput_map_buttons(int fd, uint8_t state) {
 	count++;
 #endif
 
+#ifndef UINPUT_NOAXIS
 	if(IS_UP(state))
 		uinput_send(fd, EV_ABS, REL_Y, -1);
 	else if(IS_DOWN(state))
@@ -146,11 +154,17 @@ void uinput_map_buttons(int fd, uint8_t state) {
 		uinput_send(fd, EV_ABS, REL_X,  1);
 	else
 		uinput_send(fd, EV_ABS, REL_X,  0);
+#else
+	uinput_send(fd, EV_KEY, BTN_0,    IS_UP(state));
+	uinput_send(fd, EV_KEY, BTN_1,  IS_DOWN(state));
+	uinput_send(fd, EV_KEY, BTN_2,  IS_LEFT(state));
+	uinput_send(fd, EV_KEY, BTN_3, IS_RIGHT(state));
+#endif
 
-	uinput_send(fd, EV_KEY,  BTN_START, IS_START(state));
+	uinput_send(fd, EV_KEY,  BTN_START,  IS_START(state));
 	uinput_send(fd, EV_KEY, BTN_SELECT, IS_SELECT(state));
-	uinput_send(fd, EV_KEY,      BTN_A, IS_A(state));
-	uinput_send(fd, EV_KEY,      BTN_B, IS_B(state));
+	uinput_send(fd, EV_KEY,      BTN_A,      IS_A(state));
+	uinput_send(fd, EV_KEY,      BTN_B,      IS_B(state));
 
 	uinput_send(fd, EV_SYN, SYN_REPORT, 0);
 

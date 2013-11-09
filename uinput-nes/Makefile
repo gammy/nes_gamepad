@@ -2,7 +2,7 @@
 EXE = uinput-nes
 SHELL = bash
 
-CFLAGS = -Wall -DDEBUG_UINPUT
+CFLAGS = -Wall -DDEBUG_UINPUT -DUINPUT_NOAXIS
 LFLAGS = -lftdi
 CC     = gcc
 OBJS   = $(patsubst %.c, %.o, $(wildcard ./*.c))
