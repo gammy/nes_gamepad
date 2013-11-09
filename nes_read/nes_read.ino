@@ -16,14 +16,23 @@
 #define SPRINTLN(a)		(void) 0
 #endif
 
-#define IS_RIGHT(x)		(x & 0b00000001)
-#define IS_LEFT(x)		(x & 0b00000010)
-#define IS_DOWN(x)		(x & 0b00000100)
-#define IS_UP(x)		(x & 0b00001000)
-#define IS_START(x)		(x & 0b00010000)
-#define IS_SELECT(x)		(x & 0b00100000)
-#define IS_B(x)			(x & 0b01000000)
-#define IS_A(x)			(x & 0b10000000)
+//#define IS_RIGHT(x)		(x & 0b00000001)
+//#define IS_LEFT(x)		(x & 0b00000010)
+//#define IS_DOWN(x)		(x & 0b00000100)
+//#define IS_UP(x)		(x & 0b00001000)
+//#define IS_START(x)		(x & 0b00010000)
+//#define IS_SELECT(x)		(x & 0b00100000)
+//#define IS_B(x)		(x & 0b01000000)
+//#define IS_A(x)		(x & 0b10000000)
+
+#define IS_RIGHT(x)		((x & (1 << 0)) >> 0)
+#define IS_LEFT(x)		((x & (1 << 1)) >> 1)
+#define IS_DOWN(x)		((x & (1 << 2)) >> 2)
+#define IS_UP(x)		((x & (1 << 3)) >> 3)
+#define IS_START(x)		((x & (1 << 4)) >> 4)
+#define IS_SELECT(x)		((x & (1 << 5)) >> 5)
+#define IS_B(x)			((x & (1 << 6)) >> 6)
+#define IS_A(x)			((x & (1 << 7)) >> 7)
 
 #define OUT_PORTD_CLOCK         2 // D2
 #define OUT_PORTD_LATCH         3 // D3
@@ -93,10 +102,10 @@ void loop(void) {
 
 	for(i = 0; i < 2; i++) {
 
-		uint8_t pad = pads[i];
+		uint8_t pad = pads[0];
 
-		if(pad == 0)
-			continue;
+		//if(pad == 0)
+		//	continue;
 
 		SPRINT("Pad "); SPRINT(i); SPRINT(" ");
 

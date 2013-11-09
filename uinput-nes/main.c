@@ -75,11 +75,6 @@ int main(int argc, char *argv[]) {
 			uint8_t p = pad[i].data;
 			int fd = pad[i].fd;
 
-			if(p == 0) { // FIXME jams buttons, no?
-				usleep(100);
-				continue;
-			}
-
 #ifdef DEBUG_UINPUT
 			printf("%8ld: Pad %d: ", count, i);
 			printf("%3d (%2x): ", p, p);
@@ -93,13 +88,9 @@ int main(int argc, char *argv[]) {
 			printf(" B      "); printbits(IS_B(p));
 			printf(" Start  "); printbits(IS_START(p));
 			printf(" Select "); printbits(IS_SELECT(p));
-
-			count++;
-
-//			printf("Start bits (%3d): ", IS_START(p));
-//			printbits(IS_START(p));
 			puts("");
 
+			count++;
 #endif
 
 			if(IS_UP(p))
@@ -121,7 +112,7 @@ int main(int argc, char *argv[]) {
 			uinput_send(fd, EV_KEY,      BTN_A, IS_A(p));
 			uinput_send(fd, EV_KEY,      BTN_B, IS_B(p));
 
-//			uinput_send(fd, EV_SYN, SYN_REPORT, 0);
+			uinput_send(fd, EV_SYN, SYN_REPORT, 0);
 		}
 
 	}
