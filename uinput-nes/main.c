@@ -30,27 +30,23 @@ int main(int argc, char *argv[]) {
 #endif
 
 	int i;
-	struct {
-		uint8_t data;
-		int fd;
-	} pad[2];
+	int pad_fd[2];
 
-	const size_t bufsize = 2; //sizeof(pads);
+	const size_t bufsize = 2;
 
 	printf("Device init\n");
 
 	for(i = 0; i < 2; i++) {
 
-		pad[i].data = 0;
-		pad[i].fd = uinput_init();
+		pad_fd[i] = uinput_init();
 
-		if(pad[i].fd < 0)
-			return(pad[i].fd);
+		if(pad_fd[i] < 0)
+			return(pad_fd[i]);
 
 	}
 
 	printf("Serial init\n");
-	struct ftdi_context *ftdic = bub_init(57600, 1, 0, 4096);
+	struct ftdi_context *ftdic = bub_init(57600, 1, 0, 0);
 
 	if(ftdic == NULL)
 		return(EXIT_FAILURE);
@@ -70,47 +66,45 @@ int main(int argc, char *argv[]) {
 
 		for(i = 0; i < 2; i++) {
 
-			pad[i].data = buf[i];
-
-			uint8_t p = pad[i].data;
-			int fd = pad[i].fd;
+			uint8_t state = buf[i];
+			int fd = pad_fd[i];
 
 #ifdef DEBUG_UINPUT
 			printf("%8ld: Pad %d: ", count, i);
-			printf("%3d (%2x): ", p, p);
-			printbits(p);
+			printf("%3d (%2x): ", state, state);
+			printbits(state);
 
-			printf(" Right  "); printbits(IS_RIGHT(p));
-			printf(" Left   "); printbits(IS_LEFT(p));
-			printf(" Up     "); printbits(IS_UP(p));
-			printf(" Down   "); printbits(IS_DOWN(p));
-			printf(" A      "); printbits(IS_A(p));
-			printf(" B      "); printbits(IS_B(p));
-			printf(" Start  "); printbits(IS_START(p));
-			printf(" Select "); printbits(IS_SELECT(p));
+			printf(" Right  "); printbits(IS_RIGHT(state));
+			printf(" Left   "); printbits(IS_LEFT(state));
+			printf(" Up     "); printbits(IS_UP(state));
+			printf(" Down   "); printbits(IS_DOWN(state));
+			printf(" A      "); printbits(IS_A(state));
+			printf(" B      "); printbits(IS_B(state));
+			printf(" Start  "); printbits(IS_START(state));
+			printf(" Select "); printbits(IS_SELECT(state));
 			puts("");
 
 			count++;
 #endif
 
-			if(IS_UP(p))
+			if(IS_UP(state))
 				uinput_send(fd, EV_ABS, REL_Y, -1);
-			else if(IS_DOWN(p))
+			else if(IS_DOWN(state))
 				uinput_send(fd, EV_ABS, REL_Y,  1);
 			else
 				uinput_send(fd, EV_ABS, REL_Y,  0);
 
-			if(IS_LEFT(p))
+			if(IS_LEFT(state))
 				uinput_send(fd, EV_ABS, REL_X, -1);
-			else if(IS_RIGHT(p))
+			else if(IS_RIGHT(state))
 				uinput_send(fd, EV_ABS, REL_X,  1);
 			else
 				uinput_send(fd, EV_ABS, REL_X,  0);
 
-			uinput_send(fd, EV_KEY,  BTN_START, IS_START(p));
-			uinput_send(fd, EV_KEY, BTN_SELECT, IS_SELECT(p));
-			uinput_send(fd, EV_KEY,      BTN_A, IS_A(p));
-			uinput_send(fd, EV_KEY,      BTN_B, IS_B(p));
+			uinput_send(fd, EV_KEY,  BTN_START, IS_START(state));
+			uinput_send(fd, EV_KEY, BTN_SELECT, IS_SELECT(state));
+			uinput_send(fd, EV_KEY,      BTN_A, IS_A(state));
+			uinput_send(fd, EV_KEY,      BTN_B, IS_B(state));
 
 			uinput_send(fd, EV_SYN, SYN_REPORT, 0);
 		}
@@ -123,11 +117,11 @@ int main(int argc, char *argv[]) {
 
 	for(i = 0; i < 2; i++) {
 
-		if(ioctl(pad[i].fd, UI_DEV_DESTROY) < 0) {
+		if(ioctl(pad_fd[i], UI_DEV_DESTROY) < 0) {
 			perror("ioctl");
 		}
 
-		close(pad[i].fd);
+		close(pad_fd[i]);
 	}
 
 	printf("Closing serial connection\n");
