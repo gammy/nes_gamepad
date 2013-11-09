@@ -61,8 +61,7 @@ int uinput_init(void) {
 	struct uinput_user_dev uidev;
 
 	int button[] = {BTN_A, BTN_B, BTN_START, BTN_SELECT};
-	//int button[] = {BTN_0, BTN_1, BTN_2, BTN_3};
-	int axis[]   = {REL_X, REL_Y};
+	int axis[]   = {ABS_X, ABS_Y};
 
 	// XXX is /dev/input/uinput on some systems ?
 	fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
@@ -78,7 +77,7 @@ int uinput_init(void) {
 		return(r); 
 	}
 
-	// Add Relative (D-pad) type
+	// Add Absolute (D-pad) type
 	r = ioctl(fd, UI_SET_EVBIT, EV_ABS);
 	if(r < 0) { 
 		perror("ioctl"); 
@@ -101,10 +100,11 @@ int uinput_init(void) {
 			perror("ioctl");
 			return(r);
 		}
-	}
 
-	uidev.absmin[ABS_X] = -1;
-	uidev.absmax[ABS_Y] =  1;
+		// -1 for left/up, 1 for right/down
+		uidev.absmin[axis[i]] = -1;
+		uidev.absmax[axis[i]] =  1;
+	}
 
 	// Initialize the device
 	memset(&uidev, 0, sizeof(uidev));
