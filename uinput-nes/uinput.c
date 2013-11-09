@@ -86,11 +86,22 @@ int uinput_send(int fd, uint16_t type, uint16_t code, int32_t val){
 	ev.code = code;
 	ev.value = val;
 
-	printf("Sending event type %5d, code %5d, val %5d\n", 
-	       type, code, val);
+//	printf("Sending event type %5d, code %5d, val %5d\n", 
+//	       type, code, val);
 	int r = write(fd, &ev, sizeof(struct input_event));
 	if(r < 0)
 		perror("write");
+
+
+	// Send SYN REPORT
+//	memset(&ev, 0, sizeof(struct input_event));
+//
+//	ev.type = EV_SYN;
+//	ev.code = SYN_REPORT;
+//
+//	r = write(fd, &ev, sizeof(struct input_event));
+//	if(r < 0)
+//		perror("write");
 
 	return(r);
 }
