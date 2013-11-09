@@ -61,6 +61,7 @@ int uinput_init(void) {
 	struct uinput_user_dev uidev;
 
 	int button[] = {BTN_A, BTN_B, BTN_START, BTN_SELECT};
+	//int button[] = {BTN_0, BTN_1, BTN_2, BTN_3};
 	int axis[]   = {REL_X, REL_Y};
 
 	// XXX is /dev/input/uinput on some systems ?
@@ -141,9 +142,6 @@ int uinput_send(int fd, uint16_t type, uint16_t code, int32_t val){
 	int r = write(fd, &ev, sizeof(struct input_event));
 	if(r < 0)
 		perror("write");
-
-	// Stop key/axis from repeating
-	uinput_send(fd, EV_SYN, 0, 0);
 
 	return(r);
 }
@@ -301,34 +299,17 @@ int main(int argc, char *argv[]) {
 				continue;
 			}
 
-			if(IS_UP(pad))
-				printf("Up ");
-//				uinput_send(fd, EV_REL, REL_Y, -1);
-			if(IS_DOWN(pad))
-				printf("Down ");
-//				uinput_send(fd, EV_REL, REL_Y, 1);
-			if(IS_LEFT(pad))
-				printf("Left ");
-//				uinput_send(fd, EV_REL, REL_X, -1);
-			if(IS_RIGHT(pad))
-				printf("Right ");
-//				uinput_send(fd, EV_REL, REL_X, 1);
+			uinput_send(fd, EV_REL, REL_Y,    IS_UP(pad) ? 1 : -1);
+			uinput_send(fd, EV_REL, REL_Y,  IS_DOWN(pad) ? 1 : -1);
+			uinput_send(fd, EV_REL, REL_X,  IS_LEFT(pad) ? 1 : -1);
+			uinput_send(fd, EV_REL, REL_X, IS_RIGHT(pad) ? 1 : -1);
 
-			if(IS_START(pad))
-				printf("Start ");
-//				uinput_send(fd, EV_KEY, BTN_START, 0);
-			if(IS_SELECT(pad))
-				printf("Select ");
-//				uinput_send(fd, EV_KEY, BTN_SELECT, 0);
-			if(IS_A(pad))
-				printf("A ");
-//				uinput_send(fd, EV_KEY, BTN_A, 0);
-			if(IS_B(pad))
-				printf("B ");
-//				uinput_send(fd, EV_KEY, BTN_A, 0);
+			uinput_send(fd, EV_KEY,  BTN_START, IS_START(pad));
+			uinput_send(fd, EV_KEY, BTN_SELECT, IS_SELECT(pad));
+			uinput_send(fd, EV_KEY,      BTN_A, IS_A(pad));
+			uinput_send(fd, EV_KEY,      BTN_B, IS_B(pad));
 
-			puts("");
-
+			uinput_send(fd, EV_SYN, SYN_REPORT, 0);
 		}
 
 	}
