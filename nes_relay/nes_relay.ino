@@ -78,11 +78,11 @@ void loop(void) {
 
 	uint8_t pads[2];
 
-	nes_read(pads);
-
 	while(Serial.available() > 0) {
 		uint8_t req = Serial.read();
-		if(req == 0 || req == 1)
+		if(req == 0 || req == 1) {
+			nes_read(pads);
 			Serial.write(pads[req]);
+		}
 	}
 }
