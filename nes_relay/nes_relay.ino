@@ -80,9 +80,9 @@ void loop(void) {
 
 	nes_read(pads);
 
-	if(! Serial)
-		return;
-
-	Serial.write(pads, sizeof(pads));
-
+	while(Serial.available() > 0) {
+		uint8_t req = Serial.read();
+		if(req == 0 || req == 1)
+			Serial.write(pads[req]);
+	}
 }

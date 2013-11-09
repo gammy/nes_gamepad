@@ -55,6 +55,31 @@ bub_init(unsigned int baud_rate,
 	return(ftdic);
 }
 
+// XXX Hacked together :p not very smart
+long bub_send(struct ftdi_context *ftdic, uint8_t *buf, unsigned long s) {
+
+#if 0
+	unsigned long i;
+	for(i = 0; i < s; i++)
+		printf("bub_send: Send byte %ld/%ld: %d\n", 1+i, s, buf[i]);
+#endif
+
+	unsigned long txb = ftdi_write_data(ftdic, buf, s);
+
+	if(txb < 0){
+		fprintf(stderr, "\nTX Error: %ld: %s\n", 
+			txb, 
+			ftdi_get_error_string(ftdic));
+	} else if(txb > 0 && txb != s) {
+		fprintf(stderr, "\nTX under or overrun (%ld bytes): %s\n", 
+			txb, 
+			ftdi_get_error_string(ftdic));
+	}
+
+	return(txb);
+
+}
+
 /* Nonblocking fetch, guarantees complete packet or nothing/error.
  * Not reentrant (thread) safe
  *

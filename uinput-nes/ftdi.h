@@ -10,6 +10,8 @@ bub_init(unsigned int baud_rate,
 	 unsigned int tx_buf_size,
 	 unsigned int rx_buf_size);
 
+long 
+bub_send(struct ftdi_context *ftdic, uint8_t *buf, unsigned long s);
 long
 bub_fetch(struct ftdi_context *ftdic, uint8_t *buf, unsigned long s);
 

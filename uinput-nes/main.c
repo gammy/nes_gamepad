@@ -4,10 +4,10 @@ volatile int busy, interrupt;
 
 int main(int argc, char *argv[]) {
 
-	int i;
+	uint8_t buf[2] = {0, 0};
+	uint8_t req;
 	int pad_fd[2];
-
-	const size_t bufsize = 2;
+	int i;
 
 	printf("Device init\n");
 
@@ -26,22 +26,30 @@ int main(int argc, char *argv[]) {
 	if(ftdic == NULL)
 		return(EXIT_FAILURE);
 
-	ftdi_usb_purge_rx_buffer(ftdic);
+	ftdi_usb_purge_tx_buffer(ftdic);
 
 	signal_install();
 
 	busy = 1;
 
 	while(busy) {
+		buf[0] = buf[1] = 0;
 
-		uint8_t buf[2] = {0, 0};
-		int r = bub_fetch(ftdic, buf, bufsize);
+		for(i = 0; i < 2; i++) {
 
-		if(r != bufsize)
-			continue;
+			req = i;
 
-		for(i = 0; i < 2; i++)
-			uinput_map_buttons(pad_fd[i], buf[i]);
+			ftdi_usb_purge_rx_buffer(ftdic);
+
+			bub_send(ftdic, &req, sizeof(req));
+
+			int r = bub_fetch(ftdic, &buf[i], sizeof(req));
+			if(r == 1)
+				uinput_map_buttons(pad_fd[i], buf[i]);
+			else if(r > 1)
+				printf("RX overrun: %d bytes\n", r);
+
+		}
 
 	}
 
