@@ -25,11 +25,11 @@
 #define IS_B(x)			(x & 0b01000000)
 #define IS_A(x)			(x & 0b10000000)
 
-#define IN_PORTD_DATA_1         2 // D2
-#define IN_PORTD_DATA_2         3 // D3
+#define OUT_PORTD_CLOCK         2 // D2
+#define OUT_PORTD_LATCH         3 // D3
 
-#define OUT_PORTD_LATCH         6 // D6
-#define OUT_PORTD_CLOCK         7 // D7
+#define IN_PORTD_DATA_2         4 // D4
+#define IN_PORTD_DATA_1         5 // D5
 
 #define SET_LATCH_LO		(PORTD &= ~(1 << OUT_PORTD_LATCH))
 #define SET_LATCH_HI		(PORTD |=  (1 << OUT_PORTD_LATCH))

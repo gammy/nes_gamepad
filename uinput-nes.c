@@ -136,9 +136,14 @@ int uinput_send(int fd, uint16_t type, uint16_t code, int32_t val){
 	ev.code = code;
 	ev.value = val;
 
+	printf("Sending event type %5d, code %5d, val %5d\n", 
+	       type, code, val);
 	int r = write(fd, &ev, sizeof(struct input_event));
 	if(r < 0)
 		perror("write");
+
+	// Stop key/axis from repeating
+	uinput_send(fd, EV_SYN, 0, 0);
 
 	return(r);
 }
@@ -259,7 +264,7 @@ int main(int argc, char *argv[]) {
 
 	int i;
 	uint8_t pads[2];
-	const size_t bufsize = sizeof(pads);
+	const size_t bufsize = 2; //sizeof(pads);
 
 	printf("Pad size(bytes): %ldb\n", sizeof(pads));
 
@@ -269,7 +274,7 @@ int main(int argc, char *argv[]) {
 		return(fd);
 
 	printf("Serial init\n");
-	struct ftdi_context *ftdic = bub_init(57600, 1, 0, bufsize);
+	struct ftdi_context *ftdic = bub_init(57600, 1, 0, 4096);
 
 	if(ftdic == NULL)
 		return(EXIT_FAILURE);
@@ -291,32 +296,41 @@ int main(int argc, char *argv[]) {
 
 			uint8_t pad = pads[i];
 
-			if(pad == 0)
+			if(pad == 0) {
+				usleep(100);
 				continue;
+			}
 
 			if(IS_UP(pad))
-				uinput_send(fd, EV_REL, REL_Y, -1);
+				printf("Up ");
+//				uinput_send(fd, EV_REL, REL_Y, -1);
 			if(IS_DOWN(pad))
-				uinput_send(fd, EV_REL, REL_Y, 1);
+				printf("Down ");
+//				uinput_send(fd, EV_REL, REL_Y, 1);
 			if(IS_LEFT(pad))
-				uinput_send(fd, EV_REL, REL_X, 1);
+				printf("Left ");
+//				uinput_send(fd, EV_REL, REL_X, -1);
 			if(IS_RIGHT(pad))
-				uinput_send(fd, EV_REL, REL_X, -1);
+				printf("Right ");
+//				uinput_send(fd, EV_REL, REL_X, 1);
 
 			if(IS_START(pad))
-				uinput_send(fd, EV_KEY, BTN_START, 0);
+				printf("Start ");
+//				uinput_send(fd, EV_KEY, BTN_START, 0);
 			if(IS_SELECT(pad))
-				uinput_send(fd, EV_KEY, BTN_SELECT, 0);
+				printf("Select ");
+//				uinput_send(fd, EV_KEY, BTN_SELECT, 0);
 			if(IS_A(pad))
-				uinput_send(fd, EV_KEY, BTN_A, 0);
+				printf("A ");
+//				uinput_send(fd, EV_KEY, BTN_A, 0);
 			if(IS_B(pad))
-				uinput_send(fd, EV_KEY, BTN_A, 0);
+				printf("B ");
+//				uinput_send(fd, EV_KEY, BTN_A, 0);
 
-			// Stop key/axis from repeating
-			uinput_send(fd, EV_SYN, 0, 0);
+			puts("");
+
 		}
 
-		usleep(1000);
 	}
 
 	fprintf(stderr, "Caught signal %d\n", interrupt);
