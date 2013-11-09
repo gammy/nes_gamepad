@@ -79,7 +79,7 @@ int uinput_init(void) {
 	}
 
 	// Add Relative (D-pad) type
-	r = ioctl(fd, UI_SET_EVBIT, EV_REL);
+	r = ioctl(fd, UI_SET_EVBIT, EV_ABS);
 	if(r < 0) { 
 		perror("ioctl"); 
 		return(r); 
@@ -96,12 +96,15 @@ int uinput_init(void) {
 
 	// Add the axes
 	for(i = 0; i < sizeof(axis) / sizeof(int); i++) {
-		r = ioctl(fd, UI_SET_RELBIT, axis[i]);
+		r = ioctl(fd, UI_SET_ABSBIT, axis[i]);
 		if(r < 0) {
 			perror("ioctl");
 			return(r);
 		}
 	}
+
+	uidev.absmin[ABS_X] = -1;
+	uidev.absmax[ABS_Y] =  1;
 
 	// Initialize the device
 	memset(&uidev, 0, sizeof(uidev));
@@ -290,19 +293,28 @@ int main(int argc, char *argv[]) {
 		if(r != bufsize)
 			continue;
 
-		for(i = 0; i < 2; i++) {
+		//for(i = 0; i < 2; i++) {
 
-			uint8_t pad = pads[i];
+			uint8_t pad = pads[0];
 
 			if(pad == 0) {
 				usleep(100);
 				continue;
 			}
 
-			uinput_send(fd, EV_REL, REL_Y,    IS_UP(pad) ? 1 : -1);
-			uinput_send(fd, EV_REL, REL_Y,  IS_DOWN(pad) ? 1 : -1);
-			uinput_send(fd, EV_REL, REL_X,  IS_LEFT(pad) ? 1 : -1);
-			uinput_send(fd, EV_REL, REL_X, IS_RIGHT(pad) ? 1 : -1);
+			if(IS_UP(pad))
+				uinput_send(fd, EV_ABS, REL_Y, -1);
+			else if(IS_DOWN(pad))
+				uinput_send(fd, EV_ABS, REL_Y,  1);
+			else
+				uinput_send(fd, EV_ABS, REL_Y,  0);
+
+			if(IS_LEFT(pad))
+				uinput_send(fd, EV_ABS, REL_X, -1);
+			else if(IS_RIGHT(pad))
+				uinput_send(fd, EV_ABS, REL_X,  1);
+			else
+				uinput_send(fd, EV_ABS, REL_X,  0);
 
 			uinput_send(fd, EV_KEY,  BTN_START, IS_START(pad));
 			uinput_send(fd, EV_KEY, BTN_SELECT, IS_SELECT(pad));
@@ -310,7 +322,7 @@ int main(int argc, char *argv[]) {
 			uinput_send(fd, EV_KEY,      BTN_B, IS_B(pad));
 
 			uinput_send(fd, EV_SYN, SYN_REPORT, 0);
-		}
+		//}
 
 	}
 
