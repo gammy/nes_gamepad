@@ -17,8 +17,6 @@ int main(int argc, char *argv[]) {
 	uint8_t pads[2];
 	const size_t bufsize = 2; //sizeof(pads);
 
-	printf("Pad size(bytes): %ldb\n", sizeof(pads));
-
 	printf("Device init\n");
 	int fd = uinput_init();
 	if(fd < 0)

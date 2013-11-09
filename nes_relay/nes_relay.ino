@@ -80,7 +80,7 @@ void loop(void) {
 
 	nes_read(pads);
 
-	if(! Serial || (pads[0] == 0 && pads[0] == 0))
+	if(! Serial)
 		return;
 
 	Serial.write(pads, sizeof(pads));
