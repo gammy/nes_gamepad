@@ -4,10 +4,10 @@
  * XXX This code(macros, init, read) assume that all 4 pins are on PORT D.
  *     Remember to adjust PORTD/PIND below if you're using anything but D0-D7.
  * 
- * Unlike nes_read.ino which is an example, this program deserializes the 
- * NES keypads and sends each gamepad as a single byte on the serial line.
- * IE, it takes the 16 individual bits from the controllers and sends them
- * as 2 bytes.
+ * Unlike nes_read.ino which is an example, this code waits for a pad # read
+ * request on the serial line, and then sends the state of that joypad as a 
+ * byte.
+ *
  */
 
 /** Globals ****************************************************************/
