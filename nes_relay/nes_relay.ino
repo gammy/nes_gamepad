@@ -84,6 +84,5 @@ void loop(void) {
 		return;
 
 	Serial.write(pads, sizeof(pads));
-	Serial.flush();
 
 }

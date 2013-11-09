@@ -86,7 +86,7 @@ int uinput_send(int fd, uint16_t type, uint16_t code, int32_t val){
 	ev.code = code;
 	ev.value = val;
 
-#ifdef DEBUG_UINPUT
+#ifdef DEBUG_UINPUT_MORE
 	printf("Sending event type %5d, code %5d, val %5d\n", 
 	       type, code, val);
 #endif
@@ -95,4 +95,64 @@ int uinput_send(int fd, uint16_t type, uint16_t code, int32_t val){
 		perror("write");
 
 	return(r);
+}
+
+#ifdef DEBUG_UINPUT
+void printbits(uint8_t b) {
+	int8_t i;
+
+	for(i = 7; i >= 0; i--) 
+		printf("%d", (b & (1 << i)) >> i);
+
+	return;
+}
+#endif
+
+void uinput_map_buttons(int fd, uint8_t state) {
+
+#ifdef DEBUG_UINPUT
+	static unsigned long count = 0;
+#endif
+
+
+#ifdef DEBUG_UINPUT
+	printf("%8ld: Pad fd %d: ", count, fd);
+	printf("%3d (%2x): ", state, state);
+	printbits(state);
+
+	printf(" Right  "); printbits(IS_RIGHT(state));
+	printf(" Left   "); printbits(IS_LEFT(state));
+	printf(" Up     "); printbits(IS_UP(state));
+	printf(" Down   "); printbits(IS_DOWN(state));
+	printf(" A      "); printbits(IS_A(state));
+	printf(" B      "); printbits(IS_B(state));
+	printf(" Start  "); printbits(IS_START(state));
+	printf(" Select "); printbits(IS_SELECT(state));
+	puts("");
+
+	count++;
+#endif
+
+	if(IS_UP(state))
+		uinput_send(fd, EV_ABS, REL_Y, -1);
+	else if(IS_DOWN(state))
+		uinput_send(fd, EV_ABS, REL_Y,  1);
+	else
+		uinput_send(fd, EV_ABS, REL_Y,  0);
+
+	if(IS_LEFT(state))
+		uinput_send(fd, EV_ABS, REL_X, -1);
+	else if(IS_RIGHT(state))
+		uinput_send(fd, EV_ABS, REL_X,  1);
+	else
+		uinput_send(fd, EV_ABS, REL_X,  0);
+
+	uinput_send(fd, EV_KEY,  BTN_START, IS_START(state));
+	uinput_send(fd, EV_KEY, BTN_SELECT, IS_SELECT(state));
+	uinput_send(fd, EV_KEY,      BTN_A, IS_A(state));
+	uinput_send(fd, EV_KEY,      BTN_B, IS_B(state));
+
+	uinput_send(fd, EV_SYN, SYN_REPORT, 0);
+
+	return;
 }
