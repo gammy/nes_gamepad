@@ -61,7 +61,6 @@ int uinput_init(int device_number) {
 		uidev.absmax[axis[i]]  =  1;
 
 		uidev.absfuzz[axis[i]] = 0;
-		uidev.absflat[axis[i]] = 0;
 	}
 #endif
 
@@ -148,6 +147,9 @@ void uinput_map_buttons(int fd, uint8_t state) {
 	}
 
 #ifndef UINPUT_NOAXIS
+	// FIXME should this be ABS_{X,Y}, not REL?
+	// Seems like it:
+	// https://github.com/torvalds/linux/blob/master/drivers/input/joystick/turbografx.c#L106
 	if(IS_UP(state))
 		uinput_send(fd, EV_ABS, REL_Y, -1);
 	else if(IS_DOWN(state))
