@@ -85,7 +85,7 @@ void loop(void) {
 
 	while(Serial.available() > 0) {
 		uint8_t req = Serial.read();
-		if(req == 0 || req == 1) {
+		if(req >= 0 && req <= 3) {
 			nes_read(pads);
 			Serial.write(pads[req]);
 		}
