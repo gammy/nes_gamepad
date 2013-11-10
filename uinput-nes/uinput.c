@@ -1,7 +1,7 @@
 #include "main.h"
 #include "uinput.h"
 
-int uinput_init(void) {
+int uinput_init(int device_number) {
 
 	int fd, i, r;
 	struct uinput_user_dev uidev;
@@ -54,14 +54,19 @@ int uinput_init(void) {
 		}
 
 		// -1 for left/up, 1 for right/down
-		uidev.absmin[axis[i]] = -1;
-		uidev.absmax[axis[i]] =  1;
+		uidev.absmin[axis[i]]  = -1;
+		uidev.absmax[axis[i]]  =  1;
+
+		uidev.absfuzz[axis[i]] = 0;
+		uidev.absflat[axis[i]] = 0;
 	}
 #endif
 
 	// Initialize the device
 	memset(&uidev, 0, sizeof(uidev));
-	snprintf(uidev.name, UINPUT_MAX_NAME_SIZE, "uinput-nes");
+	snprintf(uidev.name, 
+		 UINPUT_MAX_NAME_SIZE, 
+		 "NES gamepad (%d)", device_number);
 	uidev.id.bustype = BUS_USB;
 	uidev.id.vendor  = 0x1; // FIXME
 	uidev.id.product = 0x1; // FIXME

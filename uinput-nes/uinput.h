@@ -12,7 +12,7 @@
 #define IS_B(x)		((x & (1 << 6)) >> 6)
 #define IS_A(x)		((x & (1 << 7)) >> 7)
 
-int uinput_init(void);
+int uinput_init(int device_number);
 int uinput_send(int fd, uint16_t type, uint16_t code, int32_t val);
 void uinput_map_buttons(int fd, uint8_t state);
 
