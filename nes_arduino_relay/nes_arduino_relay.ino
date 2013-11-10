@@ -9,6 +9,8 @@
 
 /** Globals ****************************************************************/
 
+#define DEBUG_SERIAL
+
 #ifdef DEBUG_SERIAL
 #define SPRINT(x)               Serial.print(x)
 #define SPRINTLN(x)             Serial.println(x)
@@ -35,6 +37,17 @@
 
 #define DATA_BIT(x, y)          ((~x >> (PIN_DATA_BASE + y)) & 0b00000001)
 
+//#define DEBOUNCE_US             100000 // 100ms
+#define DEBOUNCE_US             500 // 0.5ms
+
+// Pad struct used for debouncing
+typedef struct {
+	uint32_t timer;
+	uint8_t current;
+	uint8_t last;
+	uint8_t debounced;
+} pad_t;
+	
 /** Routines ***************************************************************/
 
 void nes_read(uint8_t *pads) {
@@ -63,6 +76,27 @@ void nes_read(uint8_t *pads) {
 	}
 }
 
+uint8_t nes_read_debounced(uint8_t num) {
+
+	static uint8_t current;
+	static uint32_t us_last;
+
+	uint8_t state[4];
+	uint8_t read_new;
+
+	nes_read(state);
+	read_new = state[num];
+
+	if(read_new != current)
+		us_last = micros();
+
+	if((micros() - us_last) > (uint32_t) DEBOUNCE_US)
+		current = read_new;
+
+	return(current);
+
+}
+
 void setup(void) {
 
 	// Initialize outputs
@@ -81,13 +115,34 @@ void setup(void) {
 
 void loop(void) {
 
-	uint8_t pads[4];
+	uint8_t state[4];
+	static pad_t pad[4];
 
+	// Read all gamepad states
+	nes_read(state);
+
+	// Debounce 
+	uint8_t i;
+	for(i = 0; i < 4; i++) {
+
+		pad_t *p = &pad[i];
+		p->current = state[i];
+
+		if(p->current != p->last)
+			p->timer = micros();
+
+		if((micros() - p->timer) > DEBOUNCE_US)
+			p->debounced = p->current;
+
+		p->last = p->current;
+	}
+
+	// Receive request & transmit state 
 	while(Serial.available() > 0) {
-		uint8_t req = Serial.read();
-		if(req >= 0 && req <= 3) {
-			nes_read(pads);
-			Serial.write(pads[req]);
-		}
+
+		uint8_t num = Serial.read();
+
+		if(num >= 0 && num <= 3)
+			Serial.write(pad[num].debounced);
 	}
 }
