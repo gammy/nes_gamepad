@@ -1,9 +1,9 @@
 /* Dual NES gamepad read/relay code on an Atmega328p microcontroller.
  * By gammy
  * 
- * Unlike nes_read.ino which is an example, this code waits for a pad # read
- * request on the serial line, and then sends the state of that joypad as a 
- * byte.
+ * Unlike nes_test.ino which prints human-readable information to the serial
+ * port, this code waits for a pad # read request on the serial line from the
+ * uinput driver, and then sends the state of that joypad as a byte.
  *
  */
 
