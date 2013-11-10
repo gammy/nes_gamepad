@@ -37,6 +37,9 @@
 
 #define DATA_BIT(x, y)          ((~x >> (PIN_DATA_BASE + y)) & 0b00000001)
 
+#define SET_LED_LO		(PORTB &= ~(1 << 5))
+#define SET_LED_HI		(PORTB |=  (1 << 5))
+
 //#define DEBOUNCE_US             100000 // 100ms
 #define DEBOUNCE_US             500 // 0.5ms
 
@@ -104,6 +107,9 @@ void setup(void) {
 	REG_DIRECTION |= (1 << PIN_LATCH) | 
                          (1 << PIN_CLOCK);
 
+	// LED indicator ;p
+	DDRB |= (1 << 5);
+
 	// Enable pull-ups on inputs
 	REG_OUT |= (1 << PIN_DATA_BASE + 0) | 
 	           (1 << PIN_DATA_BASE + 1) |
@@ -139,10 +145,14 @@ void loop(void) {
 
 	// Receive request & transmit state 
 	while(Serial.available() > 0) {
+		SET_LED_HI;
 
 		uint8_t num = Serial.read();
 
-		if(num >= 0 && num <= 3)
+		if(num >= 0 && num <= 3) {
 			Serial.write(pad[num].debounced);
+		}
+
+		SET_LED_LO;
 	}
 }
