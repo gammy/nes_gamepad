@@ -2,6 +2,7 @@
 #include <getopt.h>
 #include <libgen.h>
 
+int verbosity = 0;
 volatile int busy, interrupt;
 
 #define VERSION	"Dev"
@@ -10,6 +11,7 @@ void usage(char *me) {
 	printf("uinput-nes v%s by gammy\n"
 	       "Usage: %s [options]\n\n"
 	       "-p  --pads <num>      Simulate <num> joypads (default: 1, max: 4)\n"
+	       "-v  --verbose <level> Verbosity level <level>(default: 0, max: 2)\n"
 	       "-h  --help            This help\n"
 	       "-V  --version         Display version\n\n"
 	       "This is free software; see the source for copying conditions. "
@@ -23,6 +25,7 @@ int main(int argc, char *argv[]) {
 
 	static struct option const long_options[] = {
 		{"pads",       required_argument, NULL, 'p'},
+		{"verbose",    required_argument, NULL, 'v'},
 		{"version",    no_argument,       NULL, 'V'},
 		{"help",       no_argument,       NULL, 'h'},
 		{NULL,         0,                 NULL,  0}
@@ -34,11 +37,15 @@ int main(int argc, char *argv[]) {
 	int i;
 
 	int numpads = 1;
+	verbosity = 0;
 
-	while((i = getopt_long(argc, argv, "p:Vh", long_options, NULL)) != -1){
+	while((i = getopt_long(argc, argv, "p:v:Vh", long_options, NULL)) != -1){
 		switch(i) {
 			case 'p':
 				numpads = atoi(optarg);
+				break;
+			case 'v':
+				verbosity = atoi(optarg);
 				break;
 			case 'h':
 				usage(basename(argv[0]));
@@ -49,6 +56,10 @@ int main(int argc, char *argv[]) {
 			default:
 				break;
 		}
+	}
+
+	if(verbosity > 0) {
+		fprintf(stderr, "Verbosity: %d\n", verbosity);
 	}
 
 	if(numpads < 1 || numpads > 4) {
@@ -66,6 +77,10 @@ int main(int argc, char *argv[]) {
 
 		if(pad_fd[i] < 0)
 			return(pad_fd[i]);
+
+		if(verbosity > 1)
+			fprintf(stderr, "Gamepad %d fd = %d\n", 1 + i, pad_fd[i]);
+
 
 	}
 
@@ -104,17 +119,6 @@ int main(int argc, char *argv[]) {
 
 	fprintf(stderr, "Caught signal %d\n", interrupt);
 
-	printf("Closing gamepad device%s\n", numpads == 1 ? "" : "s");
-
-	for(i = 0; i < 2; i++) {
-
-		if(ioctl(pad_fd[i], UI_DEV_DESTROY) < 0) {
-			perror("ioctl");
-		}
-
-		close(pad_fd[i]);
-	}
-
 	printf("Closing serial interface\n");
 
 	int ret = 0;
@@ -126,6 +130,17 @@ int main(int argc, char *argv[]) {
 	}
 
 	ftdi_deinit(ftdic);
+
+	printf("Closing gamepad device%s\n", numpads == 1 ? "" : "s");
+
+	for(i = 0; i < numpads; i++) {
+
+		if(ioctl(pad_fd[i], UI_DEV_DESTROY) < 0) {
+			perror("ioctl");
+		}
+
+		close(pad_fd[i]);
+	}
 
 	return(EXIT_SUCCESS);
 }

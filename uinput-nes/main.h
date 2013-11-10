@@ -15,4 +15,6 @@
 #include "ftdi.h"
 #include "uinput.h"
 
+extern int verbosity;
+
 #endif
