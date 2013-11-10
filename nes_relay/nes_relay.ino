@@ -1,8 +1,5 @@
 /* Dual NES gamepad read/relay code on an Atmega328p microcontroller.
  * By gammy
- *
- * XXX This code(macros, init, read) assume that all 4 pins are on PORT D.
- *     Remember to adjust PORTD/PIND below if you're using anything but D0-D7.
  * 
  * Unlike nes_read.ino which is an example, this code waits for a pad # read
  * request on the serial line, and then sends the state of that joypad as a 
@@ -11,28 +8,32 @@
  */
 
 /** Globals ****************************************************************/
+
 #ifdef DEBUG_SERIAL
-#define SPRINT(x) 		Serial.print(x)
-#define SPRINTLN(x)		Serial.println(x)
+#define SPRINT(x)               Serial.print(x)
+#define SPRINTLN(x)             Serial.println(x)
 #else
-#define SPRINT(x) 		(void) 0
-#define SPRINTLN(a)		(void) 0
+#define SPRINT(x)               (void) 0
+#define SPRINTLN(a)             (void) 0
 #endif
 
-#define OUT_PORTD_CLOCK         2 // D2
-#define OUT_PORTD_LATCH         3 // D3
+#define REG_DIRECTION           DDRD  // Port D data direction register
+#define REG_IN                  PIND  // Port D read register
+#define REG_OUT                 PORTD // Port D r/w register
 
-#define IN_PORTD_DATA_2         4 // D4
-#define IN_PORTD_DATA_1         5 // D5
+#define PIN_CLOCK               2     // D2 (if port D is used)
+#define PIN_LATCH               3     // D3
+#define PIN_DATA_BASE           4     // D4; first gamepad is here. 
+                                      //     2nd on D5, 3rd on D6, 4th on D7.
 
-#define SET_LATCH_LO		(PORTD &= ~(1 << OUT_PORTD_LATCH))
-#define SET_LATCH_HI		(PORTD |=  (1 << OUT_PORTD_LATCH))
 
-#define SET_CLOCK_LO		(PORTD &= ~(1 << OUT_PORTD_CLOCK)) 
-#define SET_CLOCK_HI		(PORTD |=  (1 << OUT_PORTD_CLOCK))
+#define SET_LATCH_LO            (REG_OUT &= ~(1 << PIN_LATCH))
+#define SET_LATCH_HI            (REG_OUT |=  (1 << PIN_LATCH))
 
-#define DATA_1(x)		((~x >> IN_PORTD_DATA_1) & 0b00000001)
-#define DATA_2(x)		((~x >> IN_PORTD_DATA_2) & 0b00000001)
+#define SET_CLOCK_LO            (REG_OUT &= ~(1 << PIN_CLOCK)) 
+#define SET_CLOCK_HI            (REG_OUT |=  (1 << PIN_CLOCK))
+
+#define DATA_BIT(x, y)          ((~x >> (PIN_DATA_BASE + y)) & 0b00000001)
 
 /** Routines ***************************************************************/
 
@@ -52,10 +53,12 @@ void nes_read(uint8_t *pads) {
 		SET_CLOCK_LO;
 		SET_CLOCK_HI;
 
-		data = PIND;
+		data = REG_IN;
 
-		pads[0] = (pads[0] << 1) | DATA_1(data);
-		pads[1] = (pads[1] << 1) | DATA_2(data);
+		pads[0] = (pads[0] << 1) | DATA_BIT(data, 0);
+		pads[1] = (pads[1] << 1) | DATA_BIT(data, 1);
+		pads[2] = (pads[2] << 1) | DATA_BIT(data, 2);
+		pads[3] = (pads[3] << 1) | DATA_BIT(data, 3);
 
 	}
 }
@@ -64,19 +67,21 @@ void setup(void) {
 
 	// Initialize outputs
 	// Default pin mode is input, so we don't set those
-	DDRD |= (1 << OUT_PORTD_LATCH) | 
-                (1 << OUT_PORTD_CLOCK);
+	REG_DIRECTION |= (1 << PIN_LATCH) | 
+                         (1 << PIN_CLOCK);
 
 	// Enable pull-ups on inputs
-	PORTD |= (1 << IN_PORTD_DATA_1) | 
-                 (1 << IN_PORTD_DATA_2);
+	REG_OUT |= (1 << PIN_DATA_BASE + 0) | 
+	           (1 << PIN_DATA_BASE + 1) |
+                   (1 << PIN_DATA_BASE + 2) |
+                   (1 << PIN_DATA_BASE + 3);
 
         Serial.begin(57600);
 }
 
 void loop(void) {
 
-	uint8_t pads[2];
+	uint8_t pads[4];
 
 	while(Serial.available() > 0) {
 		uint8_t req = Serial.read();
