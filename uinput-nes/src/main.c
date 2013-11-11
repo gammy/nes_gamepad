@@ -31,9 +31,11 @@ int main(int argc, char *argv[]) {
 		{NULL,         0,                 NULL,  0}
 	};
 
-	uint8_t buf[2] = {0, 0};
+	uint8_t    last[PADS_MAX];
+	uint8_t     buf[PADS_MAX];
+	int      pad_fd[PADS_MAX];
+
 	uint8_t req;
-	int pad_fd[2];
 	int i;
 
 	int numpads = 1;
@@ -62,8 +64,8 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, "Verbosity: %d\n", verbosity);
 	}
 
-	if(numpads < 1 || numpads > 4) {
-		fprintf(stderr, "Only 1-4 gamepads can be used\n");
+	if(numpads < 1 || numpads > PADS_MAX) {
+		fprintf(stderr, "Only 1-%d gamepads can be used\n", PADS_MAX);
 		return(EXIT_FAILURE);
 	}
 
@@ -97,7 +99,6 @@ int main(int argc, char *argv[]) {
 	busy = 1;
 
 	while(busy) {
-		buf[0] = buf[1] = 0;
 
 		for(i = 0; i < numpads; i++) {
 
@@ -108,10 +109,16 @@ int main(int argc, char *argv[]) {
 			bub_send(ftdic, &req, sizeof(req));
 
 			int r = bub_fetch(ftdic, &buf[i], sizeof(req));
-			if(r == 1)
-				uinput_map_buttons(pad_fd[i], buf[i]);
-			else if(r > 1)
+			if(r == 1) {
+				if(buf[i] != last[i]) {
+					uinput_map_buttons(pad_fd[i], buf[i]);
+					last[i] = buf[i];
+				}
+			} else if(r > 1) {
 				printf("RX overrun: %d bytes\n", r);
+			}
+
+
 
 		}
 

@@ -3,9 +3,10 @@ EXE = uinput-nes
 SHELL = bash
 
 CFLAGS = -Wall -DUINPUT_NOAXIS
+#CFLAGS = -Wall
 LFLAGS = -lftdi
 CC     = gcc
-OBJS   = $(patsubst %.c, %.o, $(wildcard ./*.c))
+OBJS   = $(patsubst %.c, %.o, $(wildcard src/*.c))
 
 all: $(EXE)
 

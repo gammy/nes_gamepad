@@ -48,7 +48,7 @@ void nes_read(uint8_t *pads) {
 	uint8_t i;
 	uint8_t data;
 
-	pads[0] = pads[1] = 0;
+	pads[0] = pads[1] = pads[2] = pads[3] = 0;
 
 	SET_CLOCK_HI;
 	SET_LATCH_HI;

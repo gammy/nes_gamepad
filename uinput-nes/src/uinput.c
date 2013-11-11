@@ -11,7 +11,7 @@ int uinput_init(int device_number) {
 	int axis[]   = {ABS_X, ABS_Y};
 #else
 	int button[] = {BTN_A, BTN_B, BTN_START, BTN_SELECT, 
-                        BTN_0, BTN_1, BTN_2,     BTN_3};
+                        BTN_0, BTN_1,     BTN_2, BTN_3};
 #endif
 
 	if(verbosity > 1)
@@ -40,6 +40,10 @@ int uinput_init(int device_number) {
 
 	// Add the buttons
 	for(i = 0; i < sizeof(button) / sizeof(int); i++) {
+		if(verbosity > 1)
+			fprintf(stderr, "uinput: Adding button %d, type %04x\n", 
+				i, 
+				button[i]);
 		r = ioctl(fd, UI_SET_KEYBIT, button[i]);
 		if(r < 0) {
 			perror("ioctl");
@@ -50,6 +54,10 @@ int uinput_init(int device_number) {
 #ifndef UINPUT_NOAXIS
 	// Add the axes
 	for(i = 0; i < sizeof(axis) / sizeof(int); i++) {
+		if(verbosity > 1)
+			fprintf(stderr, "uinput: Adding axis %d, type %04x\n", 
+				i, 
+				axis[i]);
 		r = ioctl(fd, UI_SET_ABSBIT, axis[i]);
 		if(r < 0) {
 			perror("ioctl");
@@ -133,16 +141,31 @@ void uinput_map_buttons(int fd, uint8_t state) {
 		printf("%3d (%2x): ", state, state);
 		printbits(state);
 
-		printf(" Right  "); printbits(IS_RIGHT(state));
-		printf(" Left   "); printbits(IS_LEFT(state));
-		printf(" Up     "); printbits(IS_UP(state));
-		printf(" Down   "); printbits(IS_DOWN(state));
-		printf(" A      "); printbits(IS_A(state));
-		printf(" B      "); printbits(IS_B(state));
-		printf(" Start  "); printbits(IS_START(state));
-		printf(" Select "); printbits(IS_SELECT(state));
+		printf(" Right(%d)",    IS_RIGHT(state));
+		printf(" Left(%d)",      IS_LEFT(state));
+		printf(" Down(%d)",      IS_DOWN(state));
+		printf(" Up(%d)",          IS_UP(state));
+		printf(" Start(%d)",    IS_START(state));
+		printf(" Select(%d)",  IS_SELECT(state));
+		printf(" B(%d)",            IS_B(state));
+		printf(" A(%d)",            IS_A(state));
 		puts("");
 
+		count++;
+	} else if(verbosity > 1) {
+		printf("%8ld: Pad fd %d: ", count, fd);
+		printf("%3d (%2x): ", state, state);
+		printbits(state);
+
+		printf(" Right");  printbits( IS_RIGHT(state));
+		printf(" Left");   printbits(  IS_LEFT(state));
+		printf(" Down");   printbits(  IS_DOWN(state));
+		printf(" Up");     printbits(    IS_UP(state));
+		printf(" Start");  printbits( IS_START(state));
+		printf(" Select"); printbits(IS_SELECT(state));
+		printf(" B");      printbits(     IS_B(state));
+		printf(" A");      printbits(     IS_A(state));
+		puts("");
 		count++;
 	}
 
