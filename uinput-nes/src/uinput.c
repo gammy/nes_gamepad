@@ -44,7 +44,9 @@ int uinput_init(int device_number, int buttons_only) {
 	// XXX is /dev/input/uinput on some systems ?
 	fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
 	if(fd < 0) {
-		perror("open");
+		fprintf(stderr, "Cannot open \"%s\" for write: %s\n",
+			"/dev/uinput",
+			strerror(errno));
 		return(fd);
 	}
 
@@ -159,7 +161,7 @@ int uinput_send(pad_t *pad, uint16_t type, uint16_t code, int32_t val){
 
 	int r = write(pad->fd, &ev, sizeof(struct input_event));
 	if(r < 0) {
-		fprintf(stderr, "uinput_send: write pad %d (fd %d): %s\n", 
+		fprintf(stderr, "Cannot write pad %d(fd %d) event: %s\n", 
 			pad->num, 
 			pad->fd, 
 			strerror(errno));
