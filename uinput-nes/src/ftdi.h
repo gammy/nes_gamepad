@@ -1,7 +1,6 @@
 #ifndef FTDI_H
 #define FTDI_H
 
-#include "main.h"
 #include <ftdi.h>
 
 struct ftdi_context *

@@ -66,10 +66,11 @@ int uinput_init(int device_number, int buttons_only) {
 		// Add the axes
 		for(i = 0; i < sizeof(axis) / sizeof(int); i++) {
 
-			if(verbosity > 1)
-				fprintf(stderr, "uinput: Adding axis %d, type %04x\n", 
-					i, 
-					axis[i]);
+			if(verbosity > 1) {
+				fprintf(stderr, 
+					"uinput: Adding axis %d, type %04x\n", 
+					i, axis[i]);
+			}
 
 			r = ioctl(fd, UI_SET_ABSBIT, axis[i]);
 			if(r < 0) {
@@ -77,9 +78,9 @@ int uinput_init(int device_number, int buttons_only) {
 				return(r);
 			}
 
-			// -1 for left/up, 1 for right/down
-			uidev.absmin[axis[i]]  = AXIS_MIN;
-			uidev.absmax[axis[i]]  = AXIS_MAX;
+			// AXIS_MIN for left/up, AXIS_MAX for right/down
+			uidev.absmin[axis[i]] = AXIS_MIN;
+			uidev.absmax[axis[i]] = AXIS_MAX;
 
 			uidev.absfuzz[axis[i]] = 0;
 		}
@@ -89,7 +90,7 @@ int uinput_init(int device_number, int buttons_only) {
 	memset(&uidev, 0, sizeof(uidev));
 	snprintf(uidev.name, 
 		 UINPUT_MAX_NAME_SIZE, 
-		 "NES gamepad (%d)", device_number);
+		 "NES gamepad %d", device_number);
 	uidev.id.bustype = BUS_USB;
 	uidev.id.vendor  = 0x1; // FIXME
 	uidev.id.product = 0x2; // GC_NES in the gamecon driver (irrelevant)

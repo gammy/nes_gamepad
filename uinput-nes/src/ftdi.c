@@ -1,3 +1,4 @@
+#include "main.h"
 #include "ftdi.h"
 
 // FTDI routines taken from an older project,

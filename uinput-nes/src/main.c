@@ -5,8 +5,6 @@
 int verbosity = 0;
 volatile int busy, interrupt;
 
-#define VERSION	"Dev"
-
 void usage(char *me) {
 	printf("uinput-nes v%s by gammy\n"
 	       "Usage: %s [options]\n\n"
