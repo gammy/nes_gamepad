@@ -18,6 +18,11 @@ int uinput_init(int device_number, int buttons_only) {
 	else
 		numbuttons = 4;
 
+	if(device_number == 1) { // XXX not so elegant, but does the job
+		for(i = 0; i < numbuttons; i++)
+			printf("Button %d: %s\n", 1 + i, button_name[i]);
+	}
+
 	if(verbosity > 1)
 		fprintf(stderr, "uinput_init(%d)\n", device_number);
 
@@ -47,13 +52,12 @@ int uinput_init(int device_number, int buttons_only) {
 
 	// Add the buttons
 	for(i = 0; i < numbuttons; i++) {
-		if(verbosity > 1)
-			fprintf(stderr, "uinput: Adding button %d type %04x: %s\n", 
+		if(verbosity > 1) {
+			fprintf(stderr, "Adding key %d type %03x (%s)\n", 
 				1 + i, 
 				button[i],
 				button_name[i]);
-		else
-			printf("Button %d: %s\n", 1 + i, button_name[i]);
+		}
 
 		r = ioctl(fd, UI_SET_KEYBIT, button[i]);
 		if(r < 0) {
@@ -64,11 +68,10 @@ int uinput_init(int device_number, int buttons_only) {
 
 	if(! buttons_only) {
 		// Add the axes
-		for(i = 0; i < sizeof(axis) / sizeof(int); i++) {
+		for(i = 0; i < 2; i++) {
 
 			if(verbosity > 1) {
-				fprintf(stderr, 
-					"uinput: Adding axis %d, type %04x\n", 
+				fprintf(stderr, "Adding axis %d, type %03x\n", 
 					i, axis[i]);
 			}
 
@@ -115,7 +118,7 @@ int uinput_init(int device_number, int buttons_only) {
 void uinput_deinit(pad_t *pad) {
 
 	if(verbosity > 1)
-		fprintf(stderr, "Close %d (fd %d)\n", pad->num, pad->fd);
+		fprintf(stderr, "Closing pad %d (fd %d)\n", pad->num, pad->fd);
 
 	if(ioctl(pad->fd, UI_DEV_DESTROY) < 0)
 		perror("ioctl");

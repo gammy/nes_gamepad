@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
 
 	for(i = 0; i < numpads; i++) {
 
-		memset(pad, 0, sizeof(pad_t));
+		memset(&pad[i], 0, sizeof(pad_t));
 
 		pad[i].num = 1 + i;
 		pad[i].fd = uinput_init(pad[i].num, buttons_only);
