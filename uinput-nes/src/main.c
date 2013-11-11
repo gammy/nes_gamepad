@@ -12,6 +12,7 @@ void usage(char *me) {
 	       "-v  --verbose <level> Verbosity level <level>             (default: 0, max: 2)\n"
 	       "-n  --noaxis          Emulate D-pad with buttons                (default: off)\n"
 	       "-P  --passthrough     Pass through data, not just state changes (default: off)\n"
+	       "-d  --daemon          Become a daemon(background process)       (default: off)\n"
 	       "-h  --help            This help\n"
 	       "-V  --version         Display version\n\n"
 	       "This is free software; see the source for copying conditions. "
@@ -28,6 +29,7 @@ int main(int argc, char *argv[]) {
 		{"verbose",    required_argument, NULL, 'v'},
 		{"noaxis",     no_argument,       NULL, 'n'},
 		{"passthrough",no_argument,       NULL, 'P'},
+		{"daemon",     no_argument,       NULL, 'd'},
 		{"version",    no_argument,       NULL, 'V'},
 		{"help",       no_argument,       NULL, 'h'},
 		{NULL,         0,                 NULL,  0}
@@ -37,12 +39,13 @@ int main(int argc, char *argv[]) {
 
 	pad_t pad[PADS_MAX];
 
-	int passthrough  = 0;
-	int buttons_only = 0;
 	int numpads      = 1;
+	int buttons_only = 0;
+	int passthrough  = 0;
+	int daemonize    = 0;
 	verbosity        = 0;
 
-	while((i = getopt_long(argc, argv, "p:v:nPVh", long_options, NULL)) != -1){
+	while((i = getopt_long(argc, argv, "p:v:nPdVh", long_options, NULL)) != -1){
 		switch(i) {
 			case 'p':
 				numpads = atoi(optarg);
@@ -55,6 +58,9 @@ int main(int argc, char *argv[]) {
 				break;
 			case 'P':
 				passthrough = 1;
+				break;
+			case 'd':
+				daemonize = 1;
 				break;
 			case 'h':
 				usage(basename(argv[0]));
@@ -94,6 +100,20 @@ int main(int argc, char *argv[]) {
 	if(ftdic == NULL)
 		return(EXIT_FAILURE);
 
+	if(daemonize) {
+
+		if(verbosity > 0)
+			fprintf(stderr, "Becoming a background process\n");
+
+		pid_t pid = fork();
+		
+		if(pid != 0) {
+			if(verbosity > 1)
+				fprintf(stderr, "Parent process exiting\n");
+			return(EXIT_SUCCESS);
+		} 
+	}
+
 	ftdi_usb_purge_tx_buffer(ftdic);
 
 	signal_install();
@@ -124,7 +144,8 @@ int main(int argc, char *argv[]) {
 
 	}
 
-	fprintf(stderr, "\nCaught signal %d\n", interrupt);
+	if(verbosity > 0)
+		fprintf(stderr, "\nCaught signal %d\n", interrupt);
 
 	printf("Closing serial interface\n");
 
