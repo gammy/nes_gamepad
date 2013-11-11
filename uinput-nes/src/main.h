@@ -6,10 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdint.h>
-#include <fcntl.h>
 #include <errno.h>
-#include <linux/input.h>
-#include <linux/uinput.h>
 
 #include "signal.h"
 #include "ftdi.h"

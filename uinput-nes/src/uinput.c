@@ -74,8 +74,8 @@ int uinput_init(int device_number) {
 		}
 
 		// -1 for left/up, 1 for right/down
-		uidev.absmin[axis[i]]  = -1;
-		uidev.absmax[axis[i]]  =  1;
+		uidev.absmin[axis[i]]  = AXIS_MIN;
+		uidev.absmax[axis[i]]  = AXIS_MAX;
 
 		uidev.absfuzz[axis[i]] = 0;
 	}
@@ -88,7 +88,7 @@ int uinput_init(int device_number) {
 		 "NES gamepad (%d)", device_number);
 	uidev.id.bustype = BUS_USB;
 	uidev.id.vendor  = 0x1; // FIXME
-	uidev.id.product = 0x1; // FIXME
+	uidev.id.product = 0x2; // GC_NES in the gamecon driver (irrelevant)
 	uidev.id.version = 1;
 
 	r = write(fd, &uidev, sizeof(uidev));
@@ -179,20 +179,17 @@ void uinput_map_buttons(int fd, uint8_t state) {
 	}
 
 #ifndef UINPUT_NOAXIS
-	// XXX Still doesn't seem to work outside of jstest :[
-	// Seems like it:
-	// https://github.com/torvalds/linux/blob/master/drivers/input/joystick/turbografx.c#L106
 	if(IS_UP(state))
-		uinput_send(fd, EV_ABS, ABS_Y, -1);
+		uinput_send(fd, EV_ABS, ABS_Y, AXIS_MIN);
 	else if(IS_DOWN(state))
-		uinput_send(fd, EV_ABS, ABS_Y,  1);
+		uinput_send(fd, EV_ABS, ABS_Y, AXIS_MAX);
 	else
 		uinput_send(fd, EV_ABS, ABS_Y,  0);
 
 	if(IS_LEFT(state))
-		uinput_send(fd, EV_ABS, ABS_X, -1);
+		uinput_send(fd, EV_ABS, ABS_X, AXIS_MIN);
 	else if(IS_RIGHT(state))
-		uinput_send(fd, EV_ABS, ABS_X,  1);
+		uinput_send(fd, EV_ABS, ABS_X, AXIS_MAX);
 	else
 		uinput_send(fd, EV_ABS, ABS_X,  0);
 #else
