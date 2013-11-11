@@ -10,9 +10,10 @@ volatile int busy, interrupt;
 void usage(char *me) {
 	printf("uinput-nes v%s by gammy\n"
 	       "Usage: %s [options]\n\n"
-	       "-p  --pads <num>      Simulate <num> joypads  (default: 1, max: 4)\n"
-	       "-v  --verbose <level> Verbosity level <level> (default: 0, max: 2)\n"
-	       "-n  --noaxis          Emulate D-pad with buttons    (default: off)\n"
+	       "-p  --pads <number>   Simulate <number> joypads           (default: 1, max: 4)\n"
+	       "-v  --verbose <level> Verbosity level <level>             (default: 0, max: 2)\n"
+	       "-n  --noaxis          Emulate D-pad with buttons                (default: off)\n"
+	       "-P  --passthrough     Pass through data, not just state changes (default: off)\n"
 	       "-h  --help            This help\n"
 	       "-V  --version         Display version\n\n"
 	       "This is free software; see the source for copying conditions. "
@@ -28,6 +29,7 @@ int main(int argc, char *argv[]) {
 		{"pads",       required_argument, NULL, 'p'},
 		{"verbose",    required_argument, NULL, 'v'},
 		{"noaxis",     no_argument,       NULL, 'n'},
+		{"passthrough",no_argument,       NULL, 'P'},
 		{"version",    no_argument,       NULL, 'V'},
 		{"help",       no_argument,       NULL, 'h'},
 		{NULL,         0,                 NULL,  0}
@@ -40,11 +42,12 @@ int main(int argc, char *argv[]) {
 	uint8_t req;
 	int i;
 
+	int passthrough  = 0;
 	int buttons_only = 0;
-	int numpads = 1;
-	verbosity = 0;
+	int numpads      = 1;
+	verbosity       = 0;
 
-	while((i = getopt_long(argc, argv, "p:v:nVh", long_options, NULL)) != -1){
+	while((i = getopt_long(argc, argv, "p:v:nPVh", long_options, NULL)) != -1){
 		switch(i) {
 			case 'p':
 				numpads = atoi(optarg);
@@ -54,6 +57,9 @@ int main(int argc, char *argv[]) {
 				break;
 			case 'n':
 				buttons_only = 1;
+				break;
+			case 'P':
+				passthrough = 1;
 				break;
 			case 'h':
 				usage(basename(argv[0]));
@@ -113,15 +119,11 @@ int main(int argc, char *argv[]) {
 			ftdi_usb_purge_rx_buffer(ftdic);
 
 			bub_send(ftdic, &req, sizeof(req));
+			bub_fetch(ftdic, &buf[i], sizeof(req));
 
-			int r = bub_fetch(ftdic, &buf[i], sizeof(req));
-			if(r == 1) {
-				if(buf[i] != last[i]) {
-					uinput_map(pad_fd[i], buf[i], buttons_only);
-					last[i] = buf[i];
-				}
-			} else if(r > 1) {
-				printf("RX overrun: %d bytes\n", r);
+			if(buf[i] != last[i] || passthrough) {
+				uinput_map(pad_fd[i], buf[i], buttons_only);
+				last[i] = buf[i];
 			}
 
 
