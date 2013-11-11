@@ -1,3 +1,18 @@
+/* This file is part of uinput-nes.
+ *
+ * uinput-nes is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * uinput-nes is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with uinput-nes.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #ifndef UINPUT_H
 #define UINPUT_H
 
@@ -5,14 +20,14 @@
 #include <linux/input.h>
 #include <linux/uinput.h>
 
-#define IS_RIGHT(x)	((x & (1 << 0)) >> 0)
-#define IS_LEFT(x)	((x & (1 << 1)) >> 1)
-#define IS_DOWN(x)	((x & (1 << 2)) >> 2)
-#define IS_UP(x)	((x & (1 << 3)) >> 3)
-#define IS_START(x)	((x & (1 << 4)) >> 4)
-#define IS_SELECT(x)	((x & (1 << 5)) >> 5)
-#define IS_B(x)		((x & (1 << 6)) >> 6)
-#define IS_A(x)		((x & (1 << 7)) >> 7)
+#define IS_RIGHT(x)     ((x & (1 << 0)) >> 0)
+#define IS_LEFT(x)      ((x & (1 << 1)) >> 1)
+#define IS_DOWN(x)      ((x & (1 << 2)) >> 2)
+#define IS_UP(x)        ((x & (1 << 3)) >> 3)
+#define IS_START(x)     ((x & (1 << 4)) >> 4)
+#define IS_SELECT(x)    ((x & (1 << 5)) >> 5)
+#define IS_B(x)         ((x & (1 << 6)) >> 6)
+#define IS_A(x)         ((x & (1 << 7)) >> 7)
 
 // Derived from reverse-engineering a generic USB gamepad;
 // This shouldn't be needed. -1 to 1 should be fine since that's
