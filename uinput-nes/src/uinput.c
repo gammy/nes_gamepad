@@ -170,22 +170,22 @@ void uinput_map_buttons(int fd, uint8_t state) {
 	}
 
 #ifndef UINPUT_NOAXIS
-	// FIXME should this be ABS_{X,Y}, not REL?
+	// XXX Still doesn't seem to work outside of jstest :[
 	// Seems like it:
 	// https://github.com/torvalds/linux/blob/master/drivers/input/joystick/turbografx.c#L106
 	if(IS_UP(state))
-		uinput_send(fd, EV_ABS, REL_Y, -1);
+		uinput_send(fd, EV_ABS, ABS_Y, -1);
 	else if(IS_DOWN(state))
-		uinput_send(fd, EV_ABS, REL_Y,  1);
+		uinput_send(fd, EV_ABS, ABS_Y,  1);
 	else
-		uinput_send(fd, EV_ABS, REL_Y,  0);
+		uinput_send(fd, EV_ABS, ABS_Y,  0);
 
 	if(IS_LEFT(state))
-		uinput_send(fd, EV_ABS, REL_X, -1);
+		uinput_send(fd, EV_ABS, ABS_X, -1);
 	else if(IS_RIGHT(state))
-		uinput_send(fd, EV_ABS, REL_X,  1);
+		uinput_send(fd, EV_ABS, ABS_X,  1);
 	else
-		uinput_send(fd, EV_ABS, REL_X,  0);
+		uinput_send(fd, EV_ABS, ABS_X,  0);
 #else
 	uinput_send(fd, EV_KEY, BTN_0,    IS_UP(state));
 	uinput_send(fd, EV_KEY, BTN_1,  IS_DOWN(state));
