@@ -89,6 +89,8 @@ void nes_read(uint8_t *pads) {
 		pads[2] = (pads[2] << 1) | DATA_BIT(data, 2);
 		pads[3] = (pads[3] << 1) | DATA_BIT(data, 3);
 
+		delayMicroseconds(10);
+
 	}
 }
 
@@ -158,14 +160,15 @@ void loop(void) {
 
 	// Receive request & transmit state 
 	while(Serial.available() > 0) {
-		SET_LED_HI;
 
 		uint8_t num = Serial.read();
 
 		if(num >= 0 && num <= 3) {
+			SET_LED_HI;
+			Serial.write(num);
 			Serial.write(pad[num].debounced);
+			SET_LED_LO;
 		}
 
-		SET_LED_LO;
 	}
 }

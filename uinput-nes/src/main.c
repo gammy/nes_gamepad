@@ -133,27 +133,31 @@ int main(int argc, char *argv[]) {
 
 	signal_install();
 
+	uint8_t rxbuf[2] = {0, 0};
 	busy = 1;
 
 	while(busy) {
 
 		for(i = 0; i < numpads; i++) {
 
-			pad_t *p = &pad[i];
-
 			ftdi_usb_purge_rx_buffer(ftdic);
 
-			uint8_t req = i;
+			uint8_t num = i;
 
-			bub_send(ftdic, &req, sizeof(req));
-			bub_fetch(ftdic, &p->state, sizeof(req));
+			bub_send(ftdic, &num, sizeof(uint8_t));
+			bub_fetch(ftdic, rxbuf,  sizeof(rxbuf));
+
+			num = rxbuf[0];
+
+			pad_t *p = &pad[num];
+
+			p->state = rxbuf[1];
+			p->num   = num;
 
 			if(p->state != p->last || passthrough) {
 				uinput_map(p, buttons_only);
 				p->last = p->state;
 			}
-
-
 
 		}
 
