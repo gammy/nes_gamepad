@@ -142,7 +142,7 @@ void uinput_deinit(pad_t *pad) {
 
 }
 
-int uinput_send(int fd, uint16_t type, uint16_t code, int32_t val){
+int uinput_send(pad_t *pad, uint16_t type, uint16_t code, int32_t val){
 	
 	struct input_event ev;
 
@@ -157,9 +157,13 @@ int uinput_send(int fd, uint16_t type, uint16_t code, int32_t val){
 		       type, code, val);
 	}
 
-	int r = write(fd, &ev, sizeof(struct input_event));
-	if(r < 0)
-		perror("write");
+	int r = write(pad->fd, &ev, sizeof(struct input_event));
+	if(r < 0) {
+		fprintf(stderr, "uinput_send: write pad %d (fd %d): %s\n", 
+			pad->num, 
+			pad->fd, 
+			strerror(errno));
+	}
 
 	return(r);
 }
@@ -178,7 +182,6 @@ void uinput_map(pad_t *pad, int buttons_only) {
 	static unsigned long count = 0;
 
 	uint8_t state = pad->state;
-	int        fd = pad->fd;
 
 	if(verbosity > 0) {
 
@@ -200,32 +203,32 @@ void uinput_map(pad_t *pad, int buttons_only) {
 	}
 
 	if(buttons_only) {
-		uinput_send(fd, EV_KEY, BTN_0,    IS_UP(state));
-		uinput_send(fd, EV_KEY, BTN_1,  IS_DOWN(state));
-		uinput_send(fd, EV_KEY, BTN_2,  IS_LEFT(state));
-		uinput_send(fd, EV_KEY, BTN_3, IS_RIGHT(state));
+		uinput_send(pad, EV_KEY, BTN_0,    IS_UP(state));
+		uinput_send(pad, EV_KEY, BTN_1,  IS_DOWN(state));
+		uinput_send(pad, EV_KEY, BTN_2,  IS_LEFT(state));
+		uinput_send(pad, EV_KEY, BTN_3, IS_RIGHT(state));
 	} else {
 		if(IS_UP(state))
-			uinput_send(fd, EV_ABS, ABS_Y, AXIS_MIN);
+			uinput_send(pad, EV_ABS, ABS_Y, AXIS_MIN);
 		else if(IS_DOWN(state))
-			uinput_send(fd, EV_ABS, ABS_Y, AXIS_MAX);
+			uinput_send(pad, EV_ABS, ABS_Y, AXIS_MAX);
 		else
-			uinput_send(fd, EV_ABS, ABS_Y,  0);
+			uinput_send(pad, EV_ABS, ABS_Y,  0);
 
 		if(IS_LEFT(state))
-			uinput_send(fd, EV_ABS, ABS_X, AXIS_MIN);
+			uinput_send(pad, EV_ABS, ABS_X, AXIS_MIN);
 		else if(IS_RIGHT(state))
-			uinput_send(fd, EV_ABS, ABS_X, AXIS_MAX);
+			uinput_send(pad, EV_ABS, ABS_X, AXIS_MAX);
 		else
-			uinput_send(fd, EV_ABS, ABS_X,  0);
+			uinput_send(pad, EV_ABS, ABS_X,  0);
 	}
 
-	uinput_send(fd, EV_KEY,  BTN_START,  IS_START(state));
-	uinput_send(fd, EV_KEY, BTN_SELECT, IS_SELECT(state));
-	uinput_send(fd, EV_KEY,      BTN_A,      IS_A(state));
-	uinput_send(fd, EV_KEY,      BTN_B,      IS_B(state));
+	uinput_send(pad, EV_KEY,  BTN_START,  IS_START(state));
+	uinput_send(pad, EV_KEY, BTN_SELECT, IS_SELECT(state));
+	uinput_send(pad, EV_KEY,      BTN_A,      IS_A(state));
+	uinput_send(pad, EV_KEY,      BTN_B,      IS_B(state));
 
-	uinput_send(fd, EV_SYN, SYN_REPORT, 0);
+	uinput_send(pad, EV_SYN, SYN_REPORT, 0);
 
 	return;
 }

@@ -144,8 +144,17 @@ int main(int argc, char *argv[]) {
 
 			uint8_t num = i;
 
-			bub_send(ftdic, &num, sizeof(uint8_t));
-			bub_fetch(ftdic, rxbuf,  sizeof(rxbuf));
+			if(bub_send(ftdic, &num, sizeof(uint8_t)) < 0) {
+				fprintf(stderr, "bub_send error, unable to recover at this time!\n");
+				busy = 0;
+				continue;
+			}
+
+			if(bub_fetch(ftdic, rxbuf,  sizeof(rxbuf)) < 0) {
+				fprintf(stderr, "bub_fetch error, unable to recover at this time!\n");
+				busy = 0;
+				continue;
+			}
 
 			num = rxbuf[0];
 
@@ -153,6 +162,9 @@ int main(int argc, char *argv[]) {
 
 			p->state = rxbuf[1];
 			p->num   = num;
+
+			if(p->num < 0 || p->num >= numpads)
+				fprintf(stderr, "Received invalid pad number: %d\n", p->num);
 
 			if(p->state != p->last || passthrough) {
 				uinput_map(p, buttons_only);

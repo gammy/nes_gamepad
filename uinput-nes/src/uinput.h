@@ -44,7 +44,7 @@ typedef struct {
 
 int  uinput_init(int device_number, int buttons_only);
 void uinput_deinit(pad_t *pad);
-int  uinput_send(int fd, uint16_t type, uint16_t code, int32_t val);
+int  uinput_send(pad_t *pad, uint16_t type, uint16_t code, int32_t val);
 void uinput_map(pad_t *pad, int buttons_only);
 
 #endif
