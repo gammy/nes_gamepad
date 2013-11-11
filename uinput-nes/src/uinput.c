@@ -28,6 +28,9 @@ int uinput_init(int device_number, int buttons_only) {
 		return(fd);
 	}
 
+	if(verbosity > 1)
+		fprintf(stderr, "Gamepad %d (fd %d)\n", device_number, fd);
+
 	// Add Key(buttons) type
 	r = ioctl(fd, UI_SET_EVBIT, EV_KEY);
 	if(r < 0) { 
@@ -104,10 +107,19 @@ int uinput_init(int device_number, int buttons_only) {
 		return(r);
 	}
 
-	if(verbosity > 1)
-		fprintf(stderr, "Device %d fd = %d\n", device_number, fd);
-
 	return(fd);
+
+}
+
+void uinput_deinit(pad_t *pad) {
+
+	if(verbosity > 1)
+		fprintf(stderr, "Close %d (fd %d)\n", pad->num, pad->fd);
+
+	if(ioctl(pad->fd, UI_DEV_DESTROY) < 0)
+		perror("ioctl");
+
+	close(pad->fd);
 
 }
 
@@ -142,16 +154,20 @@ void printbits(uint8_t b) {
 	return;
 }
 
-void uinput_map(int fd, uint8_t state, int buttons_only) {
+void uinput_map(pad_t *pad, int buttons_only) {
 
 	static unsigned long count = 0;
 
+	uint8_t state = pad->state;
+	int        fd = pad->fd;
+
 	if(verbosity > 0) {
-		printf("%8ld: Pad fd %d: ", count, fd);
-		printf("%3d (%2x): ", state, state);
+
+		printf("%8ld Pad %d: ", count, pad->num);
+		printf("%3d (%2x) [", state, state);
 		printbits(state);
 
-		printf(" Right(%d)",    IS_RIGHT(state));
+		printf("] Right(%d)",   IS_RIGHT(state));
 		printf(" Left(%d)",      IS_LEFT(state));
 		printf(" Down(%d)",      IS_DOWN(state));
 		printf(" Up(%d)",          IS_UP(state));
@@ -161,21 +177,6 @@ void uinput_map(int fd, uint8_t state, int buttons_only) {
 		printf(" A(%d)",            IS_A(state));
 		puts("");
 
-		count++;
-	} else if(verbosity > 1) {
-		printf("%8ld: Pad fd %d: ", count, fd);
-		printf("%3d (%2x): ", state, state);
-		printbits(state);
-
-		printf(" Right");  printbits( IS_RIGHT(state));
-		printf(" Left");   printbits(  IS_LEFT(state));
-		printf(" Down");   printbits(  IS_DOWN(state));
-		printf(" Up");     printbits(    IS_UP(state));
-		printf(" Start");  printbits( IS_START(state));
-		printf(" Select"); printbits(IS_SELECT(state));
-		printf(" B");      printbits(     IS_B(state));
-		printf(" A");      printbits(     IS_A(state));
-		puts("");
 		count++;
 	}
 

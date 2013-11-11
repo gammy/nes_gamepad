@@ -20,8 +20,16 @@
 #define AXIS_MIN        -32767
 #define AXIS_MAX         32767
 
-int uinput_init(int device_number, int noaxis);
-int uinput_send(int fd, uint16_t type, uint16_t code, int32_t val);
-void uinput_map(int fd, uint8_t state, int noaxis);
+typedef struct {
+	int fd;
+	int num;
+	uint8_t state;
+	uint8_t last;
+} pad_t;
+
+int  uinput_init(int device_number, int buttons_only);
+void uinput_deinit(pad_t *pad);
+int  uinput_send(int fd, uint16_t type, uint16_t code, int32_t val);
+void uinput_map(pad_t *pad, int buttons_only);
 
 #endif

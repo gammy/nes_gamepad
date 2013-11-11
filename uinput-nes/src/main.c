@@ -35,17 +35,14 @@ int main(int argc, char *argv[]) {
 		{NULL,         0,                 NULL,  0}
 	};
 
-	uint8_t    last[PADS_MAX];
-	uint8_t     buf[PADS_MAX];
-	int      pad_fd[PADS_MAX];
-
-	uint8_t req;
 	int i;
+
+	pad_t pad[PADS_MAX];
 
 	int passthrough  = 0;
 	int buttons_only = 0;
 	int numpads      = 1;
-	verbosity       = 0;
+	verbosity        = 0;
 
 	while((i = getopt_long(argc, argv, "p:v:nPVh", long_options, NULL)) != -1){
 		switch(i) {
@@ -72,10 +69,6 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	if(verbosity > 0) {
-		fprintf(stderr, "Verbosity: %d\n", verbosity);
-	}
-
 	if(numpads < 1 || numpads > PADS_MAX) {
 		fprintf(stderr, "Only 1-%d gamepads can be used\n", PADS_MAX);
 		return(EXIT_FAILURE);
@@ -87,14 +80,13 @@ int main(int argc, char *argv[]) {
 
 	for(i = 0; i < numpads; i++) {
 
-		pad_fd[i] = uinput_init(1 + i, buttons_only);
+		memset(pad, 0, sizeof(pad_t));
 
-		if(pad_fd[i] < 0)
-			return(pad_fd[i]);
+		pad[i].num = 1 + i;
+		pad[i].fd = uinput_init(pad[i].num, buttons_only);
 
-		if(verbosity > 1)
-			fprintf(stderr, "Gamepad %d fd = %d\n", 1 + i, pad_fd[i]);
-
+		if(pad[i].fd < 0)
+			return(pad[i].fd);
 
 	}
 
@@ -114,16 +106,18 @@ int main(int argc, char *argv[]) {
 
 		for(i = 0; i < numpads; i++) {
 
-			req = i;
+			pad_t *p = &pad[i];
 
 			ftdi_usb_purge_rx_buffer(ftdic);
 
-			bub_send(ftdic, &req, sizeof(req));
-			bub_fetch(ftdic, &buf[i], sizeof(req));
+			uint8_t req = i;
 
-			if(buf[i] != last[i] || passthrough) {
-				uinput_map(pad_fd[i], buf[i], buttons_only);
-				last[i] = buf[i];
+			bub_send(ftdic, &req, sizeof(req));
+			bub_fetch(ftdic, &p->state, sizeof(req));
+
+			if(p->state != p->last || passthrough) {
+				uinput_map(p, buttons_only);
+				p->last = p->state;
 			}
 
 
@@ -132,7 +126,7 @@ int main(int argc, char *argv[]) {
 
 	}
 
-	fprintf(stderr, "Caught signal %d\n", interrupt);
+	fprintf(stderr, "\nCaught signal %d\n", interrupt);
 
 	printf("Closing serial interface\n");
 
@@ -148,14 +142,8 @@ int main(int argc, char *argv[]) {
 
 	printf("Closing gamepad device%s\n", numpads == 1 ? "" : "s");
 
-	for(i = 0; i < numpads; i++) {
-
-		if(ioctl(pad_fd[i], UI_DEV_DESTROY) < 0) {
-			perror("ioctl");
-		}
-
-		close(pad_fd[i]);
-	}
+	for(i = 0; i < numpads; i++)
+		uinput_deinit(&pad[i]);
 
 	return(EXIT_SUCCESS);
 }
