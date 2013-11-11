@@ -6,6 +6,9 @@ int uinput_init(int device_number) {
 	int fd, i, r;
 	struct uinput_user_dev uidev;
 
+	char *button_name[] = {"A",     "B", "Start", "Select", 
+	                       "Up", "Down",  "Left",  "Right"};
+
 #ifndef UINPUT_NOAXIS
 	int button[] = {BTN_A, BTN_B, BTN_START, BTN_SELECT};
 	int axis[]   = {ABS_X, ABS_Y};
@@ -41,9 +44,13 @@ int uinput_init(int device_number) {
 	// Add the buttons
 	for(i = 0; i < sizeof(button) / sizeof(int); i++) {
 		if(verbosity > 1)
-			fprintf(stderr, "uinput: Adding button %d, type %04x\n", 
-				i, 
-				button[i]);
+			fprintf(stderr, "uinput: Adding button %d type %04x: %s\n", 
+				1 + i, 
+				button[i],
+				button_name[i]);
+		else
+			printf("Button %d: %s\n", 1 + i, button_name[i]);
+
 		r = ioctl(fd, UI_SET_KEYBIT, button[i]);
 		if(r < 0) {
 			perror("ioctl");
@@ -54,10 +61,12 @@ int uinput_init(int device_number) {
 #ifndef UINPUT_NOAXIS
 	// Add the axes
 	for(i = 0; i < sizeof(axis) / sizeof(int); i++) {
+
 		if(verbosity > 1)
 			fprintf(stderr, "uinput: Adding axis %d, type %04x\n", 
 				i, 
 				axis[i]);
+
 		r = ioctl(fd, UI_SET_ABSBIT, axis[i]);
 		if(r < 0) {
 			perror("ioctl");
