@@ -2,7 +2,6 @@
 EXE = uinput-nes
 SHELL = bash
 
-#CFLAGS = -Wall -DUINPUT_NOAXIS
 CFLAGS = -Wall
 LFLAGS = -lftdi
 CC     = gcc

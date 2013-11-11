@@ -10,8 +10,9 @@ volatile int busy, interrupt;
 void usage(char *me) {
 	printf("uinput-nes v%s by gammy\n"
 	       "Usage: %s [options]\n\n"
-	       "-p  --pads <num>      Simulate <num> joypads (default: 1, max: 4)\n"
-	       "-v  --verbose <level> Verbosity level <level>(default: 0, max: 2)\n"
+	       "-p  --pads <num>      Simulate <num> joypads  (default: 1, max: 4)\n"
+	       "-v  --verbose <level> Verbosity level <level> (default: 0, max: 2)\n"
+	       "-n  --noaxis          Emulate D-pad with buttons    (default: off)\n"
 	       "-h  --help            This help\n"
 	       "-V  --version         Display version\n\n"
 	       "This is free software; see the source for copying conditions. "
@@ -26,6 +27,7 @@ int main(int argc, char *argv[]) {
 	static struct option const long_options[] = {
 		{"pads",       required_argument, NULL, 'p'},
 		{"verbose",    required_argument, NULL, 'v'},
+		{"noaxis",     no_argument,       NULL, 'n'},
 		{"version",    no_argument,       NULL, 'V'},
 		{"help",       no_argument,       NULL, 'h'},
 		{NULL,         0,                 NULL,  0}
@@ -38,16 +40,20 @@ int main(int argc, char *argv[]) {
 	uint8_t req;
 	int i;
 
+	int buttons_only = 0;
 	int numpads = 1;
 	verbosity = 0;
 
-	while((i = getopt_long(argc, argv, "p:v:Vh", long_options, NULL)) != -1){
+	while((i = getopt_long(argc, argv, "p:v:nVh", long_options, NULL)) != -1){
 		switch(i) {
 			case 'p':
 				numpads = atoi(optarg);
 				break;
 			case 'v':
 				verbosity = atoi(optarg);
+				break;
+			case 'n':
+				buttons_only = 1;
 				break;
 			case 'h':
 				usage(basename(argv[0]));
@@ -75,7 +81,7 @@ int main(int argc, char *argv[]) {
 
 	for(i = 0; i < numpads; i++) {
 
-		pad_fd[i] = uinput_init(1 + i);
+		pad_fd[i] = uinput_init(1 + i, buttons_only);
 
 		if(pad_fd[i] < 0)
 			return(pad_fd[i]);
@@ -111,7 +117,7 @@ int main(int argc, char *argv[]) {
 			int r = bub_fetch(ftdic, &buf[i], sizeof(req));
 			if(r == 1) {
 				if(buf[i] != last[i]) {
-					uinput_map_buttons(pad_fd[i], buf[i]);
+					uinput_map(pad_fd[i], buf[i], buttons_only);
 					last[i] = buf[i];
 				}
 			} else if(r > 1) {

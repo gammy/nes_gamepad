@@ -1,21 +1,22 @@
 #include "main.h"
 #include "uinput.h"
 
-int uinput_init(int device_number) {
+int uinput_init(int device_number, int buttons_only) {
 
-	int fd, i, r;
+	int fd, i, r, numbuttons;
 	struct uinput_user_dev uidev;
 
 	char *button_name[] = {"A",     "B", "Start", "Select", 
 	                       "Up", "Down",  "Left",  "Right"};
 
-#ifndef UINPUT_NOAXIS
-	int button[] = {BTN_A, BTN_B, BTN_START, BTN_SELECT};
-	int axis[]   = {ABS_X, ABS_Y};
-#else
 	int button[] = {BTN_A, BTN_B, BTN_START, BTN_SELECT, 
                         BTN_0, BTN_1,     BTN_2, BTN_3};
-#endif
+	int axis[]   = {ABS_X, ABS_Y};
+
+	if(buttons_only)
+		numbuttons = 8;
+	else
+		numbuttons = 4;
 
 	if(verbosity > 1)
 		fprintf(stderr, "uinput_init(%d)\n", device_number);
@@ -42,7 +43,7 @@ int uinput_init(int device_number) {
 	}
 
 	// Add the buttons
-	for(i = 0; i < sizeof(button) / sizeof(int); i++) {
+	for(i = 0; i < numbuttons; i++) {
 		if(verbosity > 1)
 			fprintf(stderr, "uinput: Adding button %d type %04x: %s\n", 
 				1 + i, 
@@ -58,28 +59,28 @@ int uinput_init(int device_number) {
 		}
 	}
 
-#ifndef UINPUT_NOAXIS
-	// Add the axes
-	for(i = 0; i < sizeof(axis) / sizeof(int); i++) {
+	if(! buttons_only) {
+		// Add the axes
+		for(i = 0; i < sizeof(axis) / sizeof(int); i++) {
 
-		if(verbosity > 1)
-			fprintf(stderr, "uinput: Adding axis %d, type %04x\n", 
-				i, 
-				axis[i]);
+			if(verbosity > 1)
+				fprintf(stderr, "uinput: Adding axis %d, type %04x\n", 
+					i, 
+					axis[i]);
 
-		r = ioctl(fd, UI_SET_ABSBIT, axis[i]);
-		if(r < 0) {
-			perror("ioctl");
-			return(r);
+			r = ioctl(fd, UI_SET_ABSBIT, axis[i]);
+			if(r < 0) {
+				perror("ioctl");
+				return(r);
+			}
+
+			// -1 for left/up, 1 for right/down
+			uidev.absmin[axis[i]]  = AXIS_MIN;
+			uidev.absmax[axis[i]]  = AXIS_MAX;
+
+			uidev.absfuzz[axis[i]] = 0;
 		}
-
-		// -1 for left/up, 1 for right/down
-		uidev.absmin[axis[i]]  = AXIS_MIN;
-		uidev.absmax[axis[i]]  = AXIS_MAX;
-
-		uidev.absfuzz[axis[i]] = 0;
 	}
-#endif
 
 	// Initialize the device
 	memset(&uidev, 0, sizeof(uidev));
@@ -141,7 +142,7 @@ void printbits(uint8_t b) {
 	return;
 }
 
-void uinput_map_buttons(int fd, uint8_t state) {
+void uinput_map(int fd, uint8_t state, int buttons_only) {
 
 	static unsigned long count = 0;
 
@@ -178,26 +179,26 @@ void uinput_map_buttons(int fd, uint8_t state) {
 		count++;
 	}
 
-#ifndef UINPUT_NOAXIS
-	if(IS_UP(state))
-		uinput_send(fd, EV_ABS, ABS_Y, AXIS_MIN);
-	else if(IS_DOWN(state))
-		uinput_send(fd, EV_ABS, ABS_Y, AXIS_MAX);
-	else
-		uinput_send(fd, EV_ABS, ABS_Y,  0);
+	if(buttons_only) {
+		uinput_send(fd, EV_KEY, BTN_0,    IS_UP(state));
+		uinput_send(fd, EV_KEY, BTN_1,  IS_DOWN(state));
+		uinput_send(fd, EV_KEY, BTN_2,  IS_LEFT(state));
+		uinput_send(fd, EV_KEY, BTN_3, IS_RIGHT(state));
+	} else {
+		if(IS_UP(state))
+			uinput_send(fd, EV_ABS, ABS_Y, AXIS_MIN);
+		else if(IS_DOWN(state))
+			uinput_send(fd, EV_ABS, ABS_Y, AXIS_MAX);
+		else
+			uinput_send(fd, EV_ABS, ABS_Y,  0);
 
-	if(IS_LEFT(state))
-		uinput_send(fd, EV_ABS, ABS_X, AXIS_MIN);
-	else if(IS_RIGHT(state))
-		uinput_send(fd, EV_ABS, ABS_X, AXIS_MAX);
-	else
-		uinput_send(fd, EV_ABS, ABS_X,  0);
-#else
-	uinput_send(fd, EV_KEY, BTN_0,    IS_UP(state));
-	uinput_send(fd, EV_KEY, BTN_1,  IS_DOWN(state));
-	uinput_send(fd, EV_KEY, BTN_2,  IS_LEFT(state));
-	uinput_send(fd, EV_KEY, BTN_3, IS_RIGHT(state));
-#endif
+		if(IS_LEFT(state))
+			uinput_send(fd, EV_ABS, ABS_X, AXIS_MIN);
+		else if(IS_RIGHT(state))
+			uinput_send(fd, EV_ABS, ABS_X, AXIS_MAX);
+		else
+			uinput_send(fd, EV_ABS, ABS_X,  0);
+	}
 
 	uinput_send(fd, EV_KEY,  BTN_START,  IS_START(state));
 	uinput_send(fd, EV_KEY, BTN_SELECT, IS_SELECT(state));

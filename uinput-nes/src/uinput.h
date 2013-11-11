@@ -20,8 +20,8 @@
 #define AXIS_MIN        -32767
 #define AXIS_MAX         32767
 
-int uinput_init(int device_number);
+int uinput_init(int device_number, int noaxis);
 int uinput_send(int fd, uint16_t type, uint16_t code, int32_t val);
-void uinput_map_buttons(int fd, uint8_t state);
+void uinput_map(int fd, uint8_t state, int noaxis);
 
 #endif
