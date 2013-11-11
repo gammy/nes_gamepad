@@ -63,8 +63,8 @@ I presume that people who are reading this are mainly interested in using this c
 You'll need to build the software; both the uinput driver and the relay Arduino sketch, and for those things you of course need a build environment such as `build-essential` on debian/ubunututu or `base-devel` on archlinux, and the Arduino IDE of course. In addition, the uinput driver depends on `libftdi` for USB serial port communication.
 
  1. Clone this repository or download it somehow
- 2. Go into `nes_read/uinput-nes/` and build the program by running `make`, which will hopefully result in the production of a `uinput-nes` binary.
- 3. Open the Arduino IDE and load the `nes_read/nes_arduino_relay/` sketch
+ 2. Go into `nes_gamepad/uinput-nes/` and build the program by running `make`, which will hopefully result in the production of a `uinput-nes` binary.
+ 3. Open the Arduino IDE and load the `nes_gamepad/nes_arduino_relay/` sketch
  4. Build and upload the sketch to your Arduino
 
 That should be it.
