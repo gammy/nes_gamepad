@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
 				usage(basename(argv[0]));
 				return(EXIT_SUCCESS);
 			case 'V':
-				printf("uinput-nes v%s by gammy\n", VERSION);
+				printf("uinput-nes v%s\n", VERSION);
 				return(EXIT_SUCCESS);
 			default:
 				break;

@@ -89,8 +89,6 @@ void nes_read(uint8_t *pads) {
 		pads[2] = (pads[2] << 1) | DATA_BIT(data, 2);
 		pads[3] = (pads[3] << 1) | DATA_BIT(data, 3);
 
-		delayMicroseconds(10);
-
 	}
 }
 
