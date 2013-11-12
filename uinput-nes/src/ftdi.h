@@ -28,5 +28,7 @@ long
 bub_send(struct ftdi_context *ftdic, uint8_t *buf, unsigned long s);
 long
 bub_fetch(struct ftdi_context *ftdic, uint8_t *buf, unsigned long s);
+int bub_deinit(struct ftdi_context *ftdic);
+struct ftdi_context *bub_connect(void);
 
 #endif

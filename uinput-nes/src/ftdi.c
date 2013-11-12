@@ -74,6 +74,11 @@ bub_init(unsigned int baud_rate,
 // XXX Hacked together :p not very smart
 long bub_send(struct ftdi_context *ftdic, uint8_t *buf, unsigned long s) {
 
+	if(ftdic == NULL) {
+		fprintf(stderr, "bub_send: Invalid ftdi context passed!\n");
+		return(-1);
+	}
+
 #if 0
 	unsigned long i;
 	for(i = 0; i < s; i++)
@@ -111,6 +116,11 @@ bub_fetch(struct ftdi_context *ftdic, uint8_t *buf, unsigned long s) {
 
 	static unsigned long rxb = 0;
 	static unsigned long offs = 0;
+
+	if(ftdic == NULL) {
+		fprintf(stderr, "bub_fetch: Invalid ftdi context passed!\n");
+		return(-1);
+	}
 
 	if(s - offs < 0)
 		abort();
@@ -151,5 +161,40 @@ bub_fetch(struct ftdi_context *ftdic, uint8_t *buf, unsigned long s) {
 	} 
 
 	return(0);
+}
+
+int bub_deinit(struct ftdi_context *ftdic) {
+
+	if(ftdic == NULL) {
+		fprintf(stderr, "bub_deinit: Invalid ftdi context passed!\n");
+		return(-1);
+	}
+
+	int ret = 0;
+
+	if ((ret = ftdi_usb_close(ftdic)) < 0) {
+		fprintf(stderr, "Unable to close ftdi device: %d (%s)\n", 
+			ret,
+		       	ftdi_get_error_string(ftdic));
+		return(EXIT_FAILURE);
+	}
+
+	ftdi_deinit(ftdic);
+
+	ftdic = NULL;
+
+	return(EXIT_SUCCESS);
+}
+
+struct ftdi_context *bub_connect(void) {
+
+	struct ftdi_context *ftdic = bub_init(57600, 1, 0, 0);
+
+	if(ftdic == NULL)
+		return(NULL);
+
+	ftdi_usb_purge_tx_buffer(ftdic);
+
+	return(ftdic);
 }
 

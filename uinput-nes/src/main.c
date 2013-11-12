@@ -111,12 +111,6 @@ int main(int argc, char *argv[]) {
 
 	}
 
-	printf("Initializing serial interface\n");
-	struct ftdi_context *ftdic = bub_init(57600, 1, 0, 0);
-
-	if(ftdic == NULL)
-		return(EXIT_FAILURE);
-
 	if(daemonize) {
 
 		if(verbosity > 0)
@@ -131,6 +125,13 @@ int main(int argc, char *argv[]) {
 		} 
 	}
 
+	printf("Initializing serial interface\n");
+
+	struct ftdi_context *ftdic = NULL;
+
+	while(ftdic == NULL)
+		ftdic = bub_connect();
+
 	ftdi_usb_purge_tx_buffer(ftdic);
 
 	signal_install();
@@ -142,20 +143,26 @@ int main(int argc, char *argv[]) {
 
 		for(i = 0; i < numpads; i++) {
 
-			ftdi_usb_purge_rx_buffer(ftdic);
+			if(ftdic != NULL)
+				ftdi_usb_purge_rx_buffer(ftdic);
 
 			uint8_t num = i;
 
 			if(bub_send(ftdic, &num, sizeof(uint8_t)) < 0) {
-				fprintf(stderr, "bub_send error, unable to recover at this time!\n");
-				busy = 0;
-				continue;
+				fprintf(stderr, "Serial send error\n");
+				sleep(1);
+
+				fprintf(stderr, "\nAttempting to connect\n");
+				ftdic = bub_connect();
+
+				break;
 			}
 
 			if(bub_fetch(ftdic, rxbuf,  sizeof(rxbuf)) < 0) {
-				fprintf(stderr, "bub_fetch error, unable to recover at this time!\n");
-				busy = 0;
-				continue;
+				fprintf(stderr, "Serial fetch error\n");
+				sleep(1);
+
+				break;
 			}
 
 			num = rxbuf[0];
@@ -181,16 +188,7 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, "\nCaught signal %d\n", interrupt);
 
 	printf("Closing serial interface\n");
-
-	int ret = 0;
-	if ((ret = ftdi_usb_close(ftdic)) < 0) {
-		fprintf(stderr, "Unable to close ftdi device: %d (%s)\n", 
-			ret,
-		       	ftdi_get_error_string(ftdic));
-		return(EXIT_FAILURE);
-	}
-
-	ftdi_deinit(ftdic);
+	bub_deinit(ftdic);
 
 	printf("Closing gamepad device%s\n", numpads == 1 ? "" : "s");
 
