@@ -8,6 +8,8 @@ through a single USB port. On Linux.
 You can also use the builtin Linux gamecon driver to use NES gamepads
 via the RS232 serial port. This project is an alternative to that.
 
+You can reach me via github: https://github.com/gammy
+
 Components
 ----------
 

@@ -27,7 +27,8 @@
 #include "ftdi.h"
 #include "uinput.h"
 
-#define VERSION	        "1.0"
+#define VERSION         "1.0"
+
 #define PADS_MAX        4
 
 extern int verbosity;

@@ -7,7 +7,10 @@ LFLAGS = -lftdi
 CC     = gcc
 OBJS   = $(patsubst %.c, %.o, $(wildcard src/*.c))
 
-all: $(EXE)
+all: update-version $(EXE)
+
+update-version:
+	@src/update-version
 
 $(EXE): $(OBJS)
 	@echo -e "\e[4;1m$@\e[0m"

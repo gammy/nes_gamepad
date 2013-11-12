@@ -1,5 +1,7 @@
 /* This file is part of uinput-nes.
  *
+ * Copyright (C) 2013 Kristian Gunstone 
+ *
  * uinput-nes is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,7 +23,7 @@ int verbosity = 0;
 volatile int busy, interrupt;
 
 void usage(char *me) {
-	printf("uinput-nes v%s by gammy\n"
+	printf("uinput-nes v%s\n"
 	       "Usage: %s [options]\n\n"
 	       "-p  --pads <number>   Simulate <number> joypads           (default: 1, max: 4)\n"
 	       "-v  --verbose <level> Verbosity level <level>             (default: 0, max: 2)\n"
