@@ -134,6 +134,8 @@ void setup(void) {
 
 void loop(void) {
 
+	static uint32_t idle_time;
+
 	uint8_t state[4];
 	static pad_t pad[4];
 
@@ -158,15 +160,23 @@ void loop(void) {
 
 	// Receive request & transmit state 
 	while(Serial.available() > 0) {
+		SET_LED_LO;
+
+		idle_time = millis();
 
 		uint8_t num = Serial.read();
 
 		if(num >= 0 && num <= 3) {
-			SET_LED_HI;
 			Serial.write(num);
 			Serial.write(pad[num].debounced);
-			SET_LED_LO;
 		}
 
+	} 
+
+	if((millis() - idle_time) > 500) {
+		SET_LED_LO;
+		delay(500);
+		SET_LED_HI;
+		delay(5);
 	}
 }
