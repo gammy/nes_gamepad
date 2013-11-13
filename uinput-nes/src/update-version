@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 
  target="uinput-nes/src/version.h"
 gitroot=$(git rev-parse --show-toplevel 2> /dev/null)
@@ -17,5 +17,3 @@ fi
 echo "Updating to v$rev"
 
 echo "#define VERSION \"$rev\"" > "$gitroot/$target"
-#sed --in-place "s/\(#define.*VERSION.*\)\".*\"/\1\"$rev\"/" \
-#    "$gitroot/$target"
