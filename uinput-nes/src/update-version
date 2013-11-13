@@ -6,6 +6,14 @@ gitroot=$(git rev-parse --show-toplevel 2> /dev/null)
 [ $? != 0 ] && exit
 
 rev=$(git describe --tags 2> /dev/null)
+
+if [ -z "$rev" ]; then
+	echo "Can't find any tags. Rudely running 'git pull --tags'"
+	git pull --tags
+	rev=$(git describe --tags 2> /dev/null)
+	[ -z "$rev" ] && rev="Unknown"
+fi
+
 echo "Updating to v$rev"
 
 sed --in-place "s/\(#define.*VERSION.*\)\".*\"/\1\"$rev\"/" \
