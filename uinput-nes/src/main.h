@@ -23,11 +23,10 @@
 #include <stdint.h>
 #include <errno.h>
 
+#include "version.h"
 #include "signal.h"
 #include "ftdi.h"
 #include "uinput.h"
-
-#define VERSION         "1.1-1-g2d4f255"
 
 #define PADS_MAX        4
 
