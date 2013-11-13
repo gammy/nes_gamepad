@@ -27,7 +27,7 @@
 #include "ftdi.h"
 #include "uinput.h"
 
-#define VERSION         "1.1"
+#define VERSION         "1.1-1-g2d4f255"
 
 #define PADS_MAX        4
 

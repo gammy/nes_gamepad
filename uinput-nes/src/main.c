@@ -167,13 +167,15 @@ int main(int argc, char *argv[]) {
 
 			num = rxbuf[0];
 
+			if(num < 0 || num >= numpads) {
+				fprintf(stderr, "Received invalid pad number: %d\n", num);
+				break;
+			}
+
 			pad_t *p = &pad[num];
 
 			p->state = rxbuf[1];
 			p->num   = num;
-
-			if(p->num < 0 || p->num >= numpads)
-				fprintf(stderr, "Received invalid pad number: %d\n", p->num);
 
 			if(p->state != p->last || passthrough) {
 				uinput_map(p, buttons_only);
