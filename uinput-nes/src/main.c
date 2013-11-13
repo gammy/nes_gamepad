@@ -129,8 +129,13 @@ int main(int argc, char *argv[]) {
 
 	struct ftdi_context *ftdic = NULL;
 
-	while(ftdic == NULL)
+	while(1) {
 		ftdic = bub_connect();
+		if(ftdic == NULL)
+			sleep(1);
+		else
+			break;
+	}
 
 	ftdi_usb_purge_tx_buffer(ftdic);
 
