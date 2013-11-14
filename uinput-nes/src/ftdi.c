@@ -35,6 +35,8 @@ bub_init(unsigned int baud_rate,
 		return(NULL);
 	}
 
+	memset(ftdic, 0, sizeof(struct ftdi_context));
+
 	ret = ftdi_init(ftdic);
 	if (ret < 0) {
 		fprintf(stderr, "ftdi_init failed: %d.\n", ret);
