@@ -164,7 +164,7 @@ void loop(void) {
 
 		idle_time = millis();
 
-		uint8_t num = Serial.read();
+		int8_t num = Serial.read();
 
 		if(num >= 0 && num <= 3) {
 			Serial.write(num);

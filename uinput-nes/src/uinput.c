@@ -41,6 +41,17 @@ int uinput_init(int device_number, int buttons_only) {
 	if(verbosity > 1)
 		fprintf(stderr, "uinput_init(%d)\n", device_number);
 
+	memset(&uidev, 0, sizeof(struct uinput_user_dev));
+
+	// Setup gamepad properties
+	snprintf(uidev.name, 
+		 UINPUT_MAX_NAME_SIZE, 
+		 "NES gamepad %d", device_number);
+	uidev.id.bustype = BUS_USB;
+	uidev.id.vendor  = 0x1; // FIXME
+	uidev.id.product = 0x2; // GC_NES in the gamecon driver (irrelevant)
+	uidev.id.version = 1;
+
 	// XXX is /dev/input/uinput on some systems ?
 	fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
 	if(fd < 0) {
@@ -107,15 +118,6 @@ int uinput_init(int device_number, int buttons_only) {
 	}
 
 	// Initialize the device
-	memset(&uidev, 0, sizeof(uidev));
-	snprintf(uidev.name, 
-		 UINPUT_MAX_NAME_SIZE, 
-		 "NES gamepad %d", device_number);
-	uidev.id.bustype = BUS_USB;
-	uidev.id.vendor  = 0x1; // FIXME
-	uidev.id.product = 0x2; // GC_NES in the gamecon driver (irrelevant)
-	uidev.id.version = 1;
-
 	r = write(fd, &uidev, sizeof(uidev));
 	if(r < 0) {
 		perror("write");

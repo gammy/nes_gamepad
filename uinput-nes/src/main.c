@@ -137,6 +137,7 @@ int main(int argc, char *argv[]) {
 			break;
 	}
 
+	ftdi_usb_purge_rx_buffer(ftdic);
 	ftdi_usb_purge_tx_buffer(ftdic);
 
 	signal_install();
