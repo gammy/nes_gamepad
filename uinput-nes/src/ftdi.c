@@ -180,6 +180,7 @@ int bub_deinit(struct ftdi_context *ftdic) {
 	}
 
 	ftdi_deinit(ftdic);
+	free(ftdic);
 
 	ftdic = NULL;
 
