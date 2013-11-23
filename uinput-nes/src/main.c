@@ -95,6 +95,9 @@ int main(int argc, char *argv[]) {
 		return(EXIT_FAILURE);
 	}
 
+	busy = 1;
+	signal_install();
+
 	printf("Initializing %d gamepad%s\n", 
 	       numpads, 
 	       numpads == 1 ? "" : "s");
@@ -129,7 +132,7 @@ int main(int argc, char *argv[]) {
 
 	struct ftdi_context *ftdic = NULL;
 
-	while(1) {
+	while(busy) {
 		ftdic = bub_connect();
 		if(ftdic == NULL)
 			sleep(1);
@@ -137,13 +140,12 @@ int main(int argc, char *argv[]) {
 			break;
 	}
 
-	ftdi_usb_purge_rx_buffer(ftdic);
-	ftdi_usb_purge_tx_buffer(ftdic);
-
-	signal_install();
+	if(ftdic != NULL) {
+		ftdi_usb_purge_rx_buffer(ftdic);
+		ftdi_usb_purge_tx_buffer(ftdic);
+	}
 
 	uint8_t rxbuf[2] = {0, 0};
-	busy = 1;
 
 	while(busy) {
 
