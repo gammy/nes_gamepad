@@ -33,11 +33,6 @@ int uinput_init(int device_number, int buttons_only) {
 	else
 		numbuttons = 4;
 
-	if(device_number == 1) { // XXX not so elegant, but does the job
-		for(i = 0; i < numbuttons; i++)
-			printf("Button %d: %s\n", 1 + i, button_name[i]);
-	}
-
 	if(verbosity > 1)
 		fprintf(stderr, "uinput_init(%d)\n", device_number);
 
