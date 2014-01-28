@@ -19,7 +19,9 @@
 // FTDI routines taken from an older project,
 // https://github.com/gammy/JeePointer
 struct ftdi_context *
-bub_init(unsigned int baud_rate,
+bub_init(unsigned int vendor_id,
+	 unsigned int product_id,
+	 unsigned int baud_rate,
 	 unsigned char latency,
 	 unsigned int tx_buf_size,
 	 unsigned int rx_buf_size) {
@@ -45,15 +47,21 @@ bub_init(unsigned int baud_rate,
 
 	ftdi_set_interface(ftdic, INTERFACE_ANY);
 
-	ret = ftdi_usb_open(ftdic, 0x0403, 0x6001); // FIXME make nice defines
+	if(verbosity > 0) {
+		fprintf(stderr, "Opening FTDI device with vendor_id 0x%04x, product_id 0x%04x\n",
+			vendor_id, product_id);
+	}
+
+	ret = ftdi_usb_open(ftdic, vendor_id, product_id);
 	if(ret < 0) {
 		fprintf(stderr, "Unable to open ftdi device: %d (%s)\n", 
 			ret, ftdi_get_error_string(ftdic));
 		return(NULL);
 	}
 
-	if(ftdi_usb_reset(ftdic) != 0)
-		fprintf(stderr, "WARN: ftdi_usb_reset failed!\n");
+	// usb_open does this anyway
+	//if(ftdi_usb_reset(ftdic) != 0)
+	//	fprintf(stderr, "WARN: ftdi_usb_reset failed!\n");
 
 	ftdi_disable_bitbang(ftdic);
 
@@ -189,9 +197,11 @@ int bub_deinit(struct ftdi_context *ftdic) {
 	return(EXIT_SUCCESS);
 }
 
-struct ftdi_context *bub_connect(void) {
+struct ftdi_context *bub_connect(unsigned int vendor_id,
+				 unsigned int product_id) {
 
-	struct ftdi_context *ftdic = bub_init(57600, 1, 0, 0);
+	struct ftdi_context *ftdic = bub_init(vendor_id, product_id, 
+					      57600, 1, 0, 0);
 
 	if(ftdic == NULL)
 		return(NULL);

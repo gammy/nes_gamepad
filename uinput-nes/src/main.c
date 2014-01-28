@@ -30,6 +30,7 @@ void usage(char *me) {
 	       "-n  --noaxis          Emulate D-pad with buttons                (default: off)\n"
 	       "-P  --passthrough     Pass through data, not just state changes (default: off)\n"
 	       "-d  --daemon          Become a daemon(background process)       (default: off)\n"
+	       "-D  --hardware-id     USB Hardware vendor & productid     (default: 0403:6001)\n"
 	       "-h  --help            This help\n"
 	       "-V  --version         Display version\n\n"
 	       "This is free software; see the source for copying conditions. "
@@ -37,7 +38,6 @@ void usage(char *me) {
 	       "FOR A PARTICULAR PURPOSE.\n\n",
 	       VERSION, me);
 }
-
 
 int main(int argc, char *argv[]) {
 
@@ -47,6 +47,7 @@ int main(int argc, char *argv[]) {
 		{"noaxis",     no_argument,       NULL, 'n'},
 		{"passthrough",no_argument,       NULL, 'P'},
 		{"daemon",     no_argument,       NULL, 'd'},
+		{"hardware-id",required_argument, NULL, 'D'},
 		{"version",    no_argument,       NULL, 'V'},
 		{"help",       no_argument,       NULL, 'h'},
 		{NULL,         0,                 NULL,  0}
@@ -60,9 +61,12 @@ int main(int argc, char *argv[]) {
 	int buttons_only = 0;
 	int passthrough  = 0;
 	int daemonize    = 0;
+
+	int usb_vendor   = 0x0403;
+	int usb_product  = 0x6001;
 	verbosity        = 0;
 
-	while((i = getopt_long(argc, argv, "p:v:nPdVh", long_options, NULL)) != -1){
+	while((i = getopt_long(argc, argv, "p:v:nPdD:Vh", long_options, NULL)) != -1){
 		switch(i) {
 			case 'p':
 				numpads = atoi(optarg);
@@ -78,6 +82,17 @@ int main(int argc, char *argv[]) {
 				break;
 			case 'd':
 				daemonize = 1;
+				break;
+			case 'D':
+				printf("optarg: \"%s\"\n", optarg);
+				const char *tmp_vendor = strsep(&optarg, ":");
+				if(optarg == NULL) {
+					fprintf(stderr, "Invalid hardware id\n");
+					usage(basename(argv[0]));
+					return(EXIT_FAILURE);
+				}
+				usb_vendor = strtol(tmp_vendor, NULL, 16);
+				usb_product = strtol(optarg, NULL, 16);
 				break;
 			case 'h':
 				usage(basename(argv[0]));
@@ -133,7 +148,7 @@ int main(int argc, char *argv[]) {
 	struct ftdi_context *ftdic = NULL;
 
 	while(busy) {
-		ftdic = bub_connect();
+		ftdic = bub_connect(usb_vendor, usb_product);
 		if(ftdic == NULL)
 			sleep(1);
 		else
@@ -161,7 +176,7 @@ int main(int argc, char *argv[]) {
 				sleep(1);
 
 				fprintf(stderr, "\nAttempting to connect\n");
-				ftdic = bub_connect();
+				ftdic = bub_connect(usb_vendor, usb_product);
 
 				break;
 			}

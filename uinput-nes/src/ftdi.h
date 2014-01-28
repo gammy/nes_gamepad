@@ -19,7 +19,9 @@
 #include <ftdi.h>
 
 struct ftdi_context *
-bub_init(unsigned int baud_rate,
+bub_init(unsigned int vendor_id,
+	 unsigned int product_id,
+	 unsigned int baud_rate,
 	 unsigned char latency,
 	 unsigned int tx_buf_size,
 	 unsigned int rx_buf_size);
@@ -29,6 +31,7 @@ bub_send(struct ftdi_context *ftdic, uint8_t *buf, unsigned long s);
 long
 bub_fetch(struct ftdi_context *ftdic, uint8_t *buf, unsigned long s);
 int bub_deinit(struct ftdi_context *ftdic);
-struct ftdi_context *bub_connect(void);
+struct ftdi_context *bub_connect(unsigned int vendor_id, 
+				 unsigned int product_id);
 
 #endif

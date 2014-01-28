@@ -92,27 +92,6 @@ void nes_read(uint8_t *pads) {
 	}
 }
 
-uint8_t nes_read_debounced(uint8_t num) {
-
-	static uint8_t current;
-	static uint32_t us_last;
-
-	uint8_t state[4];
-	uint8_t read_new;
-
-	nes_read(state);
-	read_new = state[num];
-
-	if(read_new != current)
-		us_last = micros();
-
-	if((micros() - us_last) > (uint32_t) DEBOUNCE_US)
-		current = read_new;
-
-	return(current);
-
-}
-
 void setup(void) {
 
 	// Initialize outputs
