@@ -62,6 +62,7 @@ int main(int argc, char *argv[]) {
 	int passthrough  = 0;
 	int daemonize    = 0;
 
+	char *tmp_vendor = NULL;
 	int usb_vendor   = 0x0403;
 	int usb_product  = 0x6001;
 	verbosity        = 0;
@@ -84,14 +85,13 @@ int main(int argc, char *argv[]) {
 				daemonize = 1;
 				break;
 			case 'D':
-				printf("optarg: \"%s\"\n", optarg);
-				const char *tmp_vendor = strsep(&optarg, ":");
+				tmp_vendor = strsep(&optarg, ":");
 				if(optarg == NULL) {
 					fprintf(stderr, "Invalid hardware id\n");
 					usage(basename(argv[0]));
 					return(EXIT_FAILURE);
 				}
-				usb_vendor = strtol(tmp_vendor, NULL, 16);
+				usb_vendor  = strtol(tmp_vendor, NULL, 16);
 				usb_product = strtol(optarg, NULL, 16);
 				break;
 			case 'h':
