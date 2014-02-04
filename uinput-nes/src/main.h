@@ -27,6 +27,7 @@
 #include "signal.h"
 #include "ftdi.h"
 #include "serial.h"
+#include "bub.h"
 #include "uinput.h"
 
 #define PADS_MAX        4
