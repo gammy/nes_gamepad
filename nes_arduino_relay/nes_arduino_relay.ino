@@ -1,4 +1,5 @@
 /* Quad NES gamepad read/relay code on an Atmega328p microcontroller.
+ * Will also work on Atmega32u4 (leonardo, etc)
  *
  * Copyright (C) 2013 Kristian Gunstone
  * 
@@ -33,25 +34,35 @@
 #define SPRINTLN(a)             (void) 0
 #endif
 
-#define REG_DIRECTION           DDRD  // Port D data direction register
-#define REG_IN                  PIND  // Port D read register
-#define REG_OUT                 PORTD // Port D r/w register
+//#define REG_DIRECTION           DDRD  // Port D data direction register
+//#define REG_IN                  PIND  // Port D read register
+//#define REG_OUT                 PORTD // Port D r/w register
 
 #define PIN_CLOCK               2     // D2 (if port D is used)
 #define PIN_LATCH               3     // D3
 #define PIN_DATA_BASE           4     // D4; first gamepad is here. 
                                       //     2nd on D5, 3rd on D6, 4th on D7.
+#define PIN_LED			13
 
-#define SET_LATCH_LO            (REG_OUT &= ~(1 << PIN_LATCH))
-#define SET_LATCH_HI            (REG_OUT |=  (1 << PIN_LATCH))
+//#define SET_LATCH_LO            (REG_OUT &= ~(1 << PIN_LATCH))
+//#define SET_LATCH_HI            (REG_OUT |=  (1 << PIN_LATCH))
 
-#define SET_CLOCK_LO            (REG_OUT &= ~(1 << PIN_CLOCK)) 
-#define SET_CLOCK_HI            (REG_OUT |=  (1 << PIN_CLOCK))
+#define SET_LATCH_LO		(digitalWrite(PIN_LATCH, LOW))
+#define SET_LATCH_HI		(digitalWrite(PIN_LATCH, HIGH))
 
-#define DATA_BIT(x, y)          ((~x >> (PIN_DATA_BASE + y)) & 0b00000001)
+//#define SET_CLOCK_LO            (REG_OUT &= ~(1 << PIN_CLOCK)) 
+//#define SET_CLOCK_HI            (REG_OUT |=  (1 << PIN_CLOCK))
 
-#define SET_LED_LO		(PORTB &= ~(1 << 5))
-#define SET_LED_HI		(PORTB |=  (1 << 5))
+#define SET_CLOCK_LO		(digitalWrite(PIN_CLOCK, LOW))
+#define SET_CLOCK_HI		(digitalWrite(PIN_CLOCK, HIGH))
+
+//#define DATA_BIT(x, y)          ((~x >> (PIN_DATA_BASE + y)) & 0b00000001)
+
+//#define SET_LED_LO		(PORTB &= ~(1 << 5))
+//#define SET_LED_HI		(PORTB |=  (1 << 5))
+
+#define SET_LED_LO		(digitalWrite(PIN_LED, LOW))
+#define SET_LED_HI		(digitalWrite(PIN_LED, HIGH))
 
 //#define DEBOUNCE_US             100000 // 100ms
 #define DEBOUNCE_US             5000
@@ -79,15 +90,22 @@ void nes_read(uint8_t *pads) {
 
 	for(i = 0; i < 8; i++) {
 
-		SET_CLOCK_LO;
+		//SET_CLOCK_LO;
+		//SET_CLOCK_HI;
 		SET_CLOCK_HI;
+		SET_CLOCK_LO;
 
-		data = REG_IN;
+		//data = REG_IN;
 
-		pads[0] = (pads[0] << 1) | DATA_BIT(data, 0);
-		pads[1] = (pads[1] << 1) | DATA_BIT(data, 1);
-		pads[2] = (pads[2] << 1) | DATA_BIT(data, 2);
-		pads[3] = (pads[3] << 1) | DATA_BIT(data, 3);
+		//pads[0] = (pads[0] << 1) | DATA_BIT(data, 0);
+		//pads[1] = (pads[1] << 1) | DATA_BIT(data, 1);
+		//pads[2] = (pads[2] << 1) | DATA_BIT(data, 2);
+		//pads[3] = (pads[3] << 1) | DATA_BIT(data, 3);
+
+		pads[0] = (pads[0] << 1) | digitalRead(PIN_DATA_BASE + 0);
+		pads[1] = (pads[1] << 1) | digitalRead(PIN_DATA_BASE + 1);
+		pads[2] = (pads[2] << 1) | digitalRead(PIN_DATA_BASE + 2);
+		pads[3] = (pads[3] << 1) | digitalRead(PIN_DATA_BASE + 3);
 
 	}
 }
@@ -96,17 +114,26 @@ void setup(void) {
 
 	// Initialize outputs
 	// Default pin mode is input, so we don't set those
-	REG_DIRECTION |= (1 << PIN_LATCH) | 
-                         (1 << PIN_CLOCK);
+	pinMode(PIN_LATCH, HIGH);
+	pinMode(PIN_CLOCK, HIGH);
+
+	//REG_DIRECTION |= (1 << PIN_LATCH) | 
+        //                 (1 << PIN_CLOCK);
 
 	// LED indicator ;p
-	DDRB |= (1 << 5);
+	//DDRB |= (1 << 5);
+	pinMode(PIN_LED, HIGH);
 
 	// Enable pull-ups on inputs
-	REG_OUT |= (1 << PIN_DATA_BASE + 0) | 
-	           (1 << PIN_DATA_BASE + 1) |
-                   (1 << PIN_DATA_BASE + 2) |
-                   (1 << PIN_DATA_BASE + 3);
+	//REG_OUT |= (1 << PIN_DATA_BASE + 0) | 
+	//           (1 << PIN_DATA_BASE + 1) |
+        //           (1 << PIN_DATA_BASE + 2) |
+        //           (1 << PIN_DATA_BASE + 3);
+
+	digitalWrite(PIN_DATA_BASE + 0, HIGH);
+	digitalWrite(PIN_DATA_BASE + 1, HIGH);
+	digitalWrite(PIN_DATA_BASE + 2, HIGH);
+	digitalWrite(PIN_DATA_BASE + 3, HIGH);
 
         Serial.begin(57600);
 }
@@ -148,6 +175,7 @@ void loop(void) {
 		if(num >= 0 && num <= 3) {
 			Serial.write(num);
 			Serial.write(pad[num].debounced);
+			//Serial.write((uint8_t) 0x02);
 		}
 
 	} 

@@ -23,6 +23,8 @@ int verbosity = 0;
 volatile int busy, interrupt;
 
 void usage(char *me) {
+	        
+             //|------------------------------------------------------------------------------|
 	printf("uinput-nes v%s\n"
 	       "Usage: %s [options]\n\n"
 	       "-p  --pads <number>   Simulate <number> joypads           (default: 1, max: 4)\n"
@@ -30,7 +32,8 @@ void usage(char *me) {
 	       "-n  --noaxis          Emulate D-pad with buttons                (default: off)\n"
 	       "-P  --passthrough     Pass through data, not just state changes (default: off)\n"
 	       "-d  --daemon          Become a daemon(background process)       (default: off)\n"
-	       "-D  --hardware-id     USB Hardware vendor & productid     (default: 0403:6001)\n"
+	       "-D  --hwid <vid:pid>  Use <vid:pid> as vendor/product id  (default: 0403:6001)\n"
+	       "-s  --serialdev <dev> Use <dev> as serial device       (default: /dev/ttyACM0)\n"
 	       "-h  --help            This help\n"
 	       "-V  --version         Display version\n\n"
 	       "This is free software; see the source for copying conditions. "
@@ -47,7 +50,8 @@ int main(int argc, char *argv[]) {
 		{"noaxis",     no_argument,       NULL, 'n'},
 		{"passthrough",no_argument,       NULL, 'P'},
 		{"daemon",     no_argument,       NULL, 'd'},
-		{"hardware-id",required_argument, NULL, 'D'},
+		{"hwid",       required_argument, NULL, 'D'},
+		{"serialdev",  required_argument, NULL, 's'},
 		{"version",    no_argument,       NULL, 'V'},
 		{"help",       no_argument,       NULL, 'h'},
 		{NULL,         0,                 NULL,  0}
@@ -62,12 +66,13 @@ int main(int argc, char *argv[]) {
 	int passthrough  = 0;
 	int daemonize    = 0;
 
+	char *serial_dev = SERIAL_PORT;
 	char *tmp_vendor = NULL;
 	int usb_vendor   = 0x0403;
 	int usb_product  = 0x6001;
 	verbosity        = 0;
 
-	while((i = getopt_long(argc, argv, "p:v:nPdD:Vh", long_options, NULL)) != -1){
+	while((i = getopt_long(argc, argv, "p:v:nPdD:s:Vh", long_options, NULL)) != -1){
 		switch(i) {
 			case 'p':
 				numpads = atoi(optarg);
@@ -93,6 +98,9 @@ int main(int argc, char *argv[]) {
 				}
 				usb_vendor  = strtol(tmp_vendor, NULL, 16);
 				usb_product = strtol(optarg, NULL, 16);
+				break;
+			case 's':
+				serial_dev = optarg;
 				break;
 			case 'h':
 				usage(basename(argv[0]));
@@ -145,20 +153,37 @@ int main(int argc, char *argv[]) {
 
 	printf("Initializing serial interface\n");
 
+#ifdef USE_FTDI
 	struct ftdi_context *ftdic = NULL;
+#else
+	int serial_fd;
+#endif
 
 	while(busy) {
-		ftdic = bub_connect(usb_vendor, usb_product);
+#ifdef USE_FTDI
+		ftdic = ftdic_connect(usb_vendor, usb_product);
 		if(ftdic == NULL)
 			sleep(1);
 		else
 			break;
+#else
+		serial_fd = serial_connect(serial_dev);
+		if(serial_fd < 0)
+			sleep(1);
+		else
+			break;
+#endif
 	}
 
+#ifdef USE_FTDI
 	if(ftdic != NULL) {
 		ftdi_usb_purge_rx_buffer(ftdic);
 		ftdi_usb_purge_tx_buffer(ftdic);
 	}
+#else
+		if(serial_fd >= 0) 
+			tcflush(serial_fd, TCIOFLUSH);
+#endif
 
 	uint8_t rxbuf[2] = {0, 0};
 
@@ -166,27 +191,53 @@ int main(int argc, char *argv[]) {
 
 		for(i = 0; i < numpads; i++) {
 
+#ifdef USE_FTDI
 			if(ftdic != NULL)
 				ftdi_usb_purge_rx_buffer(ftdic);
 
 			uint8_t num = i;
 
-			if(bub_send(ftdic, &num, sizeof(uint8_t)) < 0) {
+			if(ftdic_send(ftdic, &num, sizeof(uint8_t)) < 0) {
 				fprintf(stderr, "Serial send error\n");
 				sleep(1);
 
 				fprintf(stderr, "\nAttempting to connect\n");
-				ftdic = bub_connect(usb_vendor, usb_product);
+				ftdic = ftdic_connect(usb_vendor, usb_product);
 
 				break;
 			}
 
-			if(bub_fetch(ftdic, rxbuf,  sizeof(rxbuf)) < 0) {
+			if(ftdic_fetch(ftdic, rxbuf,  sizeof(rxbuf)) < 0) {
 				fprintf(stderr, "Serial fetch error\n");
 				sleep(1);
 
 				break;
 			}
+#else
+			if(serial_fd >= 0)
+				tcflush(serial_fd, TCIFLUSH);
+
+			uint8_t num = i;
+
+			if(serial_send(serial_fd, &num, sizeof(uint8_t)) < 0) {
+				fprintf(stderr, "Serial send error\n");
+				serial_deinit(serial_fd);
+				sleep(1);
+
+				fprintf(stderr, "\nAttempting to connect\n");
+				serial_fd = serial_connect(serial_dev);
+
+				break;
+			}
+
+			if(serial_fetch(serial_fd, rxbuf,  sizeof(rxbuf)) < 0) {
+				fprintf(stderr, "Serial fetch error\n");
+				sleep(1);
+
+				break;
+			}
+
+#endif
 
 			num = rxbuf[0];
 
@@ -213,7 +264,11 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, "\nCaught signal %d\n", interrupt);
 
 	printf("Closing serial interface\n");
-	bub_deinit(ftdic);
+#ifdef USE_FTDI
+	ftdic_deinit(ftdic);
+#else
+	serial_deinit(serial_fd);
+#endif
 
 	printf("Closing gamepad device%s\n", numpads == 1 ? "" : "s");
 

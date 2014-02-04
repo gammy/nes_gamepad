@@ -13,24 +13,29 @@
  * You should have received a copy of the GNU General Public License
  * along with uinput-nes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef SERIAL_H
+#define SERIAL_H
 
-#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <termios.h>
 #include <stdlib.h>
+#include <strings.h>
 #include <string.h>
 #include <unistd.h>
-#include <stdint.h>
-#include <errno.h>
+#include <stdio.h>
 
-#include "version.h"
-#include "signal.h"
-#include "ftdi.h"
-#include "serial.h"
-#include "uinput.h"
+#define SERIAL_PORT		"/dev/ttyACM0"
+#define SERIAL_BAUDRATE		B57600 // Defined in termbits.h from termios.h
+#define _POSIX_SOURCE		1
 
-#define PADS_MAX        4
+struct termios serial_oldtio, serial_newtio;
 
-extern int verbosity;
+int serial_init(char *dev);
+int serial_connect(char *dev);
+int serial_send(int fd, uint8_t *buf, unsigned long s);
+int serial_fetch(int fd, uint8_t *buf, unsigned long s);
+int serial_deinit(int fd);
 
 #endif

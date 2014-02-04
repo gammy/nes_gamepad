@@ -19,7 +19,7 @@
 // FTDI routines taken from an older project,
 // https://github.com/gammy/JeePointer
 struct ftdi_context *
-bub_init(unsigned int vendor_id,
+ftdic_init(unsigned int vendor_id,
 	 unsigned int product_id,
 	 unsigned int baud_rate,
 	 unsigned char latency,
@@ -82,17 +82,17 @@ bub_init(unsigned int vendor_id,
 }
 
 // XXX Hacked together :p not very smart
-long bub_send(struct ftdi_context *ftdic, uint8_t *buf, unsigned long s) {
+long ftdic_send(struct ftdi_context *ftdic, uint8_t *buf, unsigned long s) {
 
 	if(ftdic == NULL) {
-		fprintf(stderr, "bub_send: Invalid ftdi context passed!\n");
+		fprintf(stderr, "ftdi_send: Invalid ftdi context passed!\n");
 		return(-1);
 	}
 
 #if 0
 	unsigned long i;
 	for(i = 0; i < s; i++)
-		printf("bub_send: Send byte %ld/%ld: %d\n", 1+i, s, buf[i]);
+		printf("ftdi_send: Send byte %ld/%ld: %d\n", 1+i, s, buf[i]);
 #endif
 
 	unsigned long txb = ftdi_write_data(ftdic, buf, s);
@@ -122,13 +122,13 @@ long bub_send(struct ftdi_context *ftdic, uint8_t *buf, unsigned long s) {
  *                              error(negative value)
  */
 long
-bub_fetch(struct ftdi_context *ftdic, uint8_t *buf, unsigned long s) {
+ftdic_fetch(struct ftdi_context *ftdic, uint8_t *buf, unsigned long s) {
 
 	static unsigned long rxb = 0;
 	static unsigned long offs = 0;
 
 	if(ftdic == NULL) {
-		fprintf(stderr, "bub_fetch: Invalid ftdi context passed!\n");
+		fprintf(stderr, "ftdi_fetch: Invalid ftdi context passed!\n");
 		return(-1);
 	}
 
@@ -173,10 +173,10 @@ bub_fetch(struct ftdi_context *ftdic, uint8_t *buf, unsigned long s) {
 	return(0);
 }
 
-int bub_deinit(struct ftdi_context *ftdic) {
+int ftdic_deinit(struct ftdi_context *ftdic) {
 
 	if(ftdic == NULL) {
-		fprintf(stderr, "bub_deinit: Invalid ftdi context passed!\n");
+		fprintf(stderr, "ftdi_deinit: Invalid ftdi context passed!\n");
 		return(-1);
 	}
 
@@ -197,10 +197,10 @@ int bub_deinit(struct ftdi_context *ftdic) {
 	return(EXIT_SUCCESS);
 }
 
-struct ftdi_context *bub_connect(unsigned int vendor_id,
+struct ftdi_context *ftdic_connect(unsigned int vendor_id,
 				 unsigned int product_id) {
 
-	struct ftdi_context *ftdic = bub_init(vendor_id, product_id, 
+	struct ftdi_context *ftdic = ftdic_init(vendor_id, product_id, 
 					      57600, 1, 0, 0);
 
 	if(ftdic == NULL)

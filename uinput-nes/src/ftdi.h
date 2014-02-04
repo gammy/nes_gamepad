@@ -19,7 +19,7 @@
 #include <ftdi.h>
 
 struct ftdi_context *
-bub_init(unsigned int vendor_id,
+ftdic_init(unsigned int vendor_id,
 	 unsigned int product_id,
 	 unsigned int baud_rate,
 	 unsigned char latency,
@@ -27,11 +27,11 @@ bub_init(unsigned int vendor_id,
 	 unsigned int rx_buf_size);
 
 long 
-bub_send(struct ftdi_context *ftdic, uint8_t *buf, unsigned long s);
+ftdic_send(struct ftdi_context *ftdic, uint8_t *buf, unsigned long s);
 long
-bub_fetch(struct ftdi_context *ftdic, uint8_t *buf, unsigned long s);
-int bub_deinit(struct ftdi_context *ftdic);
-struct ftdi_context *bub_connect(unsigned int vendor_id, 
+ftdic_fetch(struct ftdi_context *ftdic, uint8_t *buf, unsigned long s);
+int ftdic_deinit(struct ftdi_context *ftdic);
+struct ftdi_context *ftdic_connect(unsigned int vendor_id, 
 				 unsigned int product_id);
 
 #endif
