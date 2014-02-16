@@ -55,7 +55,7 @@ int serial_init(char *dev) {
 	serial_newtio.c_lflag = 0; // Non-canonical
 	//serial_newtio.c_lflag = ICANON; // Non-canonical
 	serial_newtio.c_cc[VTIME]    = 0;     /* inter-character timer unused */
-	serial_newtio.c_cc[VMIN]     = 2;     /* blocking read until 1 character arrives */
+	serial_newtio.c_cc[VMIN]     = 2;     /* blocking read until character(s) arrive */
 
 	tcflush(fd, TCIFLUSH);
 
@@ -72,7 +72,7 @@ int serial_init(char *dev) {
 int serial_send(int fd, uint8_t *buf, unsigned long s) {
 
 	if(fd < 0) {
-		fprintf(stderr, "serial_send: Invalid file descripor passed!\n");
+		fprintf(stderr, "serial_send: Invalid file descriptor passed!\n");
 		return(-1);
 	}
 
@@ -100,7 +100,7 @@ int serial_send(int fd, uint8_t *buf, unsigned long s) {
 int serial_fetch(int fd, uint8_t *buf, unsigned long s) {
 
 	if(fd < 0) {
-		fprintf(stderr, "serial_fetch: Invalid file descripor passed!\n");
+		fprintf(stderr, "serial_fetch: Invalid file descriptor passed!\n");
 		return(-1);
 	}
 
@@ -124,7 +124,7 @@ int serial_fetch(int fd, uint8_t *buf, unsigned long s) {
 int serial_deinit(int fd) {
 
 	if(fd < 0) {
-		fprintf(stderr, "serial_deinit: Invalid file descripor passed!\n");
+		fprintf(stderr, "serial_deinit: Invalid file descriptor passed!\n");
 		return(-1);
 	}
 

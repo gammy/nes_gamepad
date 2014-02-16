@@ -43,14 +43,14 @@ int bub_connect(bub_t *bub) {
 	}
 
 	switch(bub->type) {
-		case default:
+		default:
 			fprintf(stderr, 
 				"bub_connect: invalid bub type!\n");
 			return(-1);
 			break;
 		case BUB_TYPE_SERIAL:
 			// FIXME check if we need to clean up!
-			bub->serial_fd = serial_init();
+			bub->serial_fd = serial_init(bub->serial_dev);
 
 			if(bub->serial_fd < 0)
 				return(-1);
@@ -58,7 +58,7 @@ int bub_connect(bub_t *bub) {
 		case BUB_TYPE_FTDI:
 			bub->ftdic = ftdic_init(bub->ftdi_vid, 
 						bub->ftdi_pid, 
-						bub->baud_rate, 0, 0);
+						bub->baud_rate, 0, 0, 0);
 
 			if(bub->ftdic == NULL)
 				return(-1);
@@ -76,13 +76,13 @@ int bub_iflush(bub_t *bub) {
 	}
 
 	switch(bub->type) {
-		case default:
+		default:
 			fprintf(stderr, 
 				"bub_iflush: invalid bub type!\n");
 			return(-1);
 			break;
 		case BUB_TYPE_SERIAL:
-			tcflush(bub->fd, TCIFLUSH);
+			tcflush(bub->serial_fd, TCIFLUSH);
 			break;
 		case BUB_TYPE_FTDI:
 			ftdi_usb_purge_rx_buffer(bub->ftdic);
@@ -100,13 +100,13 @@ int bub_oflush(bub_t *bub) {
 	}
 
 	switch(bub->type) {
-		case default:
+		default:
 			fprintf(stderr, 
 				"bub_oflush: invalid bub type!\n");
 			return(-1);
 			break;
 		case BUB_TYPE_SERIAL:
-			tcflush(bub->fd, TCOFLUSH);
+			tcflush(bub->serial_fd, TCOFLUSH);
 			break;
 		case BUB_TYPE_FTDI:
 			ftdi_usb_purge_tx_buffer(bub->ftdic);
@@ -124,13 +124,13 @@ int bub_flush(bub_t *bub) {
 	}
 
 	switch(bub->type) {
-		case default:
+		default:
 			fprintf(stderr, 
 				"bub_flush: invalid bub type!\n");
 			return(-1);
 			break;
 		case BUB_TYPE_SERIAL:
-			tcflush(bub->fd, TCIOFLUSH);
+			tcflush(bub->serial_fd, TCIOFLUSH);
 			break;
 		case BUB_TYPE_FTDI:
 			ftdi_usb_purge_rx_buffer(bub->ftdic);
@@ -149,7 +149,7 @@ int bub_send(bub_t *bub, uint8_t *buf, unsigned long s) {
 	}
 
 	switch(bub->type) {
-		case default:
+		default:
 			fprintf(stderr, 
 				"bub_send: invalid bub type!\n");
 			break;
@@ -172,7 +172,7 @@ int bub_fetch(bub_t *bub, uint8_t *buf, unsigned long s) {
 	}
 
 	switch(bub->type) {
-		case default:
+		default:
 			fprintf(stderr, 
 				"bub_fetch: invalid bub type!\n");
 			break;
@@ -195,7 +195,7 @@ int bub_deinit(bub_t *bub) {
 	}
 
 	switch(bub->type) {
-		case default:
+		default:
 			fprintf(stderr, 
 				"bub_deinit: invalid bub type!\n");
 			break;

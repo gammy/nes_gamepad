@@ -129,7 +129,7 @@ int main(int argc, char *argv[]) {
 
 	bub->ftdi_vid      = usb_vendor;
 	bub->ftdi_pid      = usb_product;
-	bub->serial_device = SERIAL_PORT;
+	bub->serial_dev    = serial_dev;
 	bub->baud_rate     = SERIAL_BAUDRATE;
 
 	busy = 1;
@@ -223,12 +223,12 @@ int main(int argc, char *argv[]) {
 
 			uint8_t num = i;
 
-			if(bub_send(bub, &num, sizeof(uint8_t)) != 0) {
+			if(bub_send(bub, &num, sizeof(uint8_t)) != sizeof(uint8_t)) {
 				fprintf(stderr, "Serial send error\n");
 				sleep(1);
 
 				fprintf(stderr, "\nAttempting to connect\n");
-				bub_connect();
+				bub_connect(bub);
 
 				break;
 			}
@@ -299,7 +299,7 @@ int main(int argc, char *argv[]) {
 
 			pad_t *p = &pad[num];
 
-			p->state = rxbuf[1];
+			p->state = ~rxbuf[1];
 			p->num   = num;
 
 			if(p->state != p->last || passthrough) {
