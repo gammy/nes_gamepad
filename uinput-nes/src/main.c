@@ -227,6 +227,7 @@ int main(int argc, char *argv[]) {
 				fprintf(stderr, "Serial send error\n");
 				sleep(1);
 
+				bub_deinit(bub);
 				fprintf(stderr, "\nAttempting to connect\n");
 				bub_connect(bub);
 
