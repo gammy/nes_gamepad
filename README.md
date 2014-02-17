@@ -80,13 +80,18 @@ By default it creates a single joystick interface (`js0` if no other joysticks a
 (I'm too lazy to document all of them, so I'll just mention the most interesting ones here; sorry!)
 
 `--noaxis`
+
 Sets up the D-pad (up, down, left, right) as standard buttons (1, 2, 3, 4) rather than axial devices.
 
 `--passthrough`
+
 uinput-nes will normally just pass on controller state changes to the uinput subsystem. For example, if A is pressed, that state change("A was pressed down") is sent. If the state of the controller remains the same, nothing is sent. In passthrough mode, all states read are immediately passed on rather than discarded. Some programs such as `mednafen` require the passthrough option as it expects key repetitions during a certain timeframe in order to set up the controllers. I've so far not come across any other programs requiring it.
 
 `--daemon`
+
 Makes uinput-nes a background process, which is appropriate if you want to have it running all the time. 
 
-Note: The `testing` branch (and possibly already in the main branch if I forget to update this readme file) now supports non-FTDI serial interfaces such as seen on the newer Arduino boards using the Atmega 32u4 microprocessor (ie the Arduino `Leonardo`). To make use of this code, run `uintput-nes` with the `--noftdi` option. 
+`--noftdi`
+
+uinput-nes supports non-FTDI serial interfaces as seen on the newer Arduino boards using the Atmega 32u4 microprocessor (ie the `Arduino Leonardo`). Use this option if you have such a board.
 
