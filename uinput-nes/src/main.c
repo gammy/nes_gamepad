@@ -167,14 +167,6 @@ int main(int argc, char *argv[]) {
 
 	printf("Initializing serial interface\n");
 
-	/*
-#ifdef USE_FTDI
-	struct ftdi_context *ftdic = NULL;
-#else
-	int serial_fd;
-#endif
-	*/
-
 	while(busy) {
 
 		if(bub_connect(bub) != 0)
@@ -242,13 +234,6 @@ int main(int argc, char *argv[]) {
 	fflush(stdout);
 
 	bub_deinit(bub);
-	/*
-#ifdef USE_FTDI
-	ftdic_deinit(ftdic);
-#else
-	serial_deinit(serial_fd);
-#endif
-*/
 
 	printf("Closing gamepad device%s\n", numpads == 1 ? "" : "s");
 
