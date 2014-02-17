@@ -182,36 +182,9 @@ int main(int argc, char *argv[]) {
 		else
 			break;
 
-/*
-#ifdef USE_FTDI
-		ftdic = ftdic_connect(usb_vendor, usb_product);
-		if(ftdic == NULL)
-			sleep(1);
-		else
-			break;
-#else
-		serial_fd = serial_connect(serial_dev);
-		if(serial_fd < 0)
-			sleep(1);
-		else
-			break;
-#endif
-*/
 	}
 
 	bub_flush(bub);
-
-	/*
-#ifdef USE_FTDI
-	if(ftdic != NULL) {
-		ftdi_usb_purge_rx_buffer(ftdic);
-		ftdi_usb_purge_tx_buffer(ftdic);
-	}
-#else
-		if(serial_fd >= 0) 
-			tcflush(serial_fd, TCIOFLUSH);
-#endif
-*/
 
 	uint8_t rxbuf[2] = {0, 0};
 
@@ -241,56 +214,6 @@ int main(int argc, char *argv[]) {
 				break;
 			}
 
-			/*
-#ifdef USE_FTDI
-			if(ftdic != NULL)
-				ftdi_usb_purge_rx_buffer(ftdic);
-
-			uint8_t num = i;
-
-			if(ftdic_send(ftdic, &num, sizeof(uint8_t)) < 0) {
-				fprintf(stderr, "Serial send error\n");
-				sleep(1);
-
-				fprintf(stderr, "\nAttempting to connect\n");
-				ftdic = ftdic_connect(usb_vendor, usb_product);
-
-				break;
-			}
-
-			if(ftdic_fetch(ftdic, rxbuf,  sizeof(rxbuf)) < 0) {
-				fprintf(stderr, "Serial fetch error\n");
-				sleep(1);
-
-				break;
-			}
-#else
-				if(serial_fd >= 0)
-				tcflush(serial_fd, TCIFLUSH);
-
-			uint8_t num = i;
-
-			if(serial_send(serial_fd, &num, sizeof(uint8_t)) < 0) {
-				fprintf(stderr, "Serial send error\n");
-				serial_deinit(serial_fd);
-				sleep(1);
-
-				fprintf(stderr, "\nAttempting to connect\n");
-				serial_fd = serial_connect(serial_dev);
-
-				break;
-			}
-
-			if(serial_fetch(serial_fd, rxbuf,  sizeof(rxbuf)) < 0) {
-				fprintf(stderr, "Serial fetch error\n");
-				sleep(1);
-
-				break;
-			}
-
-#endif
-*/
-
 			num = rxbuf[0];
 
 			if(num < 0 || num >= numpads) {
@@ -316,6 +239,7 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, "\nCaught signal %d\n", interrupt);
 
 	printf("Closing serial interface\n");
+	fflush(stdout);
 
 	bub_deinit(bub);
 	/*

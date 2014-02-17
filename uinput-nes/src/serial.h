@@ -32,6 +32,7 @@
 
 struct termios serial_oldtio, serial_newtio;
 
+int serial_flush(int fd, int flag);
 int serial_init(char *dev);
 int serial_connect(char *dev);
 int serial_send(int fd, uint8_t *buf, unsigned long s);

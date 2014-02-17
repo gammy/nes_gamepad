@@ -17,6 +17,21 @@
 #include "main.h"
 #include "serial.h"
 
+int serial_flush(int fd, int flag) {
+
+	if(fd <= 0) {
+		fprintf(stderr, "serial_flush: invalid file descriptor passed!\n");
+		return(-1);
+	}
+
+	int r = tcflush(fd, flag);
+
+	if(r != 0)
+		fprintf(stderr, "tcflush %d: %s\n", fd, strerror(errno));
+
+	return(r);
+}
+
 // Code is basically the same as 
 // http://tldp.org/HOWTO/Serial-Programming-HOWTO/x115.html
 
@@ -57,7 +72,7 @@ int serial_init(char *dev) {
 	serial_newtio.c_cc[VTIME]    = 0;     /* inter-character timer unused */
 	serial_newtio.c_cc[VMIN]     = 2;     /* blocking read until character(s) arrive */
 
-	tcflush(fd, TCIFLUSH);
+	serial_flush(fd, TCIFLUSH);
 
 	int ret = tcsetattr(fd, TCSANOW, &serial_newtio);
 	if(ret < 0) {
@@ -128,84 +143,19 @@ int serial_deinit(int fd) {
 		return(-1);
 	}
 
-	tcflush(fd, TCIOFLUSH);
+	serial_flush(fd, TCIOFLUSH);
 	tcsetattr(fd, TCSANOW, &serial_oldtio);
 	close(fd);
 
 	return(0);
 }
 
-#if 0
-/* Nonblocking fetch, guarantees complete packet or nothing/error.
- * Not reentrant (thread) safe
- *
- * @param struct ftdi_context *	FTDI context pointer
- * @param uint8_t *		Pointer to buffer
- * @param unsigned long		Size of buffer
- * @returns			Size of buffer(success), 
- *                              0(buffer not filled yet) or 
- *                              error(negative value)
- */
-long
-bub_fetch(struct ftdi_context *ftdic, uint8_t *buf, unsigned long s) {
-
-	static unsigned long rxb = 0;
-	static unsigned long offs = 0;
-
-	if(ftdic == NULL) {
-		fprintf(stderr, "bub_fetch: Invalid ftdi context passed!\n");
-		return(-1);
-	}
-
-	if(s - offs < 0)
-		abort();
-
-	if(offs != 0)
-		fprintf(stderr, "Asking for %ld\n", s - offs);
-
-	rxb = ftdi_read_data(ftdic, &buf[offs], s - offs);
-
-	if(offs != 0 && rxb != 0)
-		fprintf(stderr, "Got %ld\n", rxb);
-
-	if(rxb != 0) {
-
-		if(rxb < 0){
-			fprintf(stderr, "\nRX Error: %ld: %s\n", rxb, ftdi_get_error_string(ftdic));
-			memset(buf, 0, s);
-			offs = 0;
-			return(rxb);
-		}
-
-		if(rxb + offs < s) {
-			offs = rxb;
-			fprintf(stderr, "\nRX Underrun: Got %ld, need %ld more\n", rxb, s - offs);
-		} else if(rxb + offs > s) {
-			fprintf(stderr, "\nRX Overrun, %ld too much(rxb=%ld, offs=%ld)\n", 
-				s - offs,
-				rxb,
-				offs);
-			memset(buf, 0, s);
-			offs = 0;
-		}
-	} 
-
-	if(rxb + offs == s) {
-		offs = 0;
-		return(s);
-	} 
-
-	return(0);
-}
-#endif
-
-
 int serial_connect(char *dev) {
 
 	int fd = serial_init(dev);
 
 	if(fd >= 0)
-		tcflush(fd, TCIOFLUSH);
+		serial_flush(fd, TCIOFLUSH);
 
 	return(fd);
 }

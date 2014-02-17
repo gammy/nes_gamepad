@@ -16,6 +16,43 @@
 #include "main.h"
 #include "ftdi.h"
 
+int ftdic_iflush(struct ftdi_context *ftdic) {
+
+	if(ftdic == NULL) {
+		fprintf(stderr, "ftdic_iflush: Invalid ftdi context passed!\n");
+		return(-1);
+
+	}
+
+	ftdi_usb_purge_rx_buffer(ftdic);
+
+	return(0);
+}
+
+int ftdic_oflush(struct ftdi_context *ftdic) {
+
+	if(ftdic == NULL) {
+		fprintf(stderr, "ftdic_iflush: Invalid ftdi context passed!\n");
+		return(-1);
+
+	}
+
+	ftdi_usb_purge_tx_buffer(ftdic);
+
+	return(0);
+}
+
+int ftdic_flush(struct ftdi_context *ftdic) {
+
+	if(ftdic_iflush(ftdic) == -1)
+		return(-1);
+
+	if(ftdic_oflush(ftdic) == -1)
+		return(-1);
+
+	return(0);
+}
+
 // FTDI routines taken from an older project,
 // https://github.com/gammy/JeePointer
 struct ftdi_context *
@@ -206,7 +243,7 @@ struct ftdi_context *ftdic_connect(unsigned int vendor_id,
 	if(ftdic == NULL)
 		return(NULL);
 
-	ftdi_usb_purge_tx_buffer(ftdic);
+	ftdic_oflush(ftdic);
 
 	return(ftdic);
 }

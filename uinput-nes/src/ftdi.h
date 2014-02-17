@@ -18,6 +18,10 @@
 
 #include <ftdi.h>
 
+int ftdic_iflush(struct ftdi_context *ftdic);
+int ftdic_oflush(struct ftdi_context *ftdic);
+int ftdic_flush(struct ftdi_context *ftdic);
+
 struct ftdi_context *
 ftdic_init(unsigned int vendor_id,
 	 unsigned int product_id,

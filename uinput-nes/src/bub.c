@@ -70,6 +70,8 @@ int bub_connect(bub_t *bub) {
 
 int bub_iflush(bub_t *bub) {
 
+	int r = -1;
+
 	if(bub == NULL) {
 		fprintf(stderr, "bub_iflush: invalid bub context passed!\n");
 		return(-1);
@@ -79,20 +81,21 @@ int bub_iflush(bub_t *bub) {
 		default:
 			fprintf(stderr, 
 				"bub_iflush: invalid bub type!\n");
-			return(-1);
 			break;
 		case BUB_TYPE_SERIAL:
-			tcflush(bub->serial_fd, TCIFLUSH);
+			r = serial_flush(bub->serial_fd, TCIFLUSH);
 			break;
 		case BUB_TYPE_FTDI:
-			ftdi_usb_purge_rx_buffer(bub->ftdic);
+			r = ftdic_iflush(bub->ftdic);
 			break;
 	}
 
-	return(0);
+	return(r);
 }
 
 int bub_oflush(bub_t *bub) {
+
+	int r = -1;
 
 	if(bub == NULL) {
 		fprintf(stderr, "bub_oflush: invalid bub context passed!\n");
@@ -103,20 +106,21 @@ int bub_oflush(bub_t *bub) {
 		default:
 			fprintf(stderr, 
 				"bub_oflush: invalid bub type!\n");
-			return(-1);
 			break;
 		case BUB_TYPE_SERIAL:
-			tcflush(bub->serial_fd, TCOFLUSH);
+			r = serial_flush(bub->serial_fd, TCOFLUSH);
 			break;
 		case BUB_TYPE_FTDI:
-			ftdi_usb_purge_tx_buffer(bub->ftdic);
+			r = ftdic_oflush(bub->ftdic);
 			break;
 	}
 
-	return(0);
+	return(r);
 }
 
 int bub_flush(bub_t *bub) {
+
+	int r = -1;
 
 	if(bub == NULL) {
 		fprintf(stderr, "bub_flush: invalid bub context passed!\n");
@@ -127,18 +131,19 @@ int bub_flush(bub_t *bub) {
 		default:
 			fprintf(stderr, 
 				"bub_flush: invalid bub type!\n");
-			return(-1);
 			break;
 		case BUB_TYPE_SERIAL:
-			tcflush(bub->serial_fd, TCIOFLUSH);
+			//tcflush(bub->serial_fd, TCIOFLUSH);
+			r = serial_flush(bub->serial_fd, TCIOFLUSH);
 			break;
 		case BUB_TYPE_FTDI:
-			ftdi_usb_purge_rx_buffer(bub->ftdic);
-			ftdi_usb_purge_tx_buffer(bub->ftdic);
+			r = ftdic_flush(bub->ftdic);
+			//ftdi_usb_purge_rx_buffer(bub->ftdic);
+			//ftdi_usb_purge_tx_buffer(bub->ftdic);
 			break;
 	}
 
-	return(0);
+	return(r);
 }
 
 int bub_send(bub_t *bub, uint8_t *buf, unsigned long s) {
