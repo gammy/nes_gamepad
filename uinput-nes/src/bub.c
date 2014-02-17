@@ -133,13 +133,10 @@ int bub_flush(bub_t *bub) {
 				"bub_flush: invalid bub type!\n");
 			break;
 		case BUB_TYPE_SERIAL:
-			//tcflush(bub->serial_fd, TCIOFLUSH);
 			r = serial_flush(bub->serial_fd, TCIOFLUSH);
 			break;
 		case BUB_TYPE_FTDI:
 			r = ftdic_flush(bub->ftdic);
-			//ftdi_usb_purge_rx_buffer(bub->ftdic);
-			//ftdi_usb_purge_tx_buffer(bub->ftdic);
 			break;
 	}
 
@@ -147,6 +144,8 @@ int bub_flush(bub_t *bub) {
 }
 
 int bub_send(bub_t *bub, uint8_t *buf, unsigned long s) {
+
+	int r = -1;
 
 	if(bub == NULL) {
 		fprintf(stderr, "bub_send: invalid bub context passed!\n");
@@ -159,17 +158,19 @@ int bub_send(bub_t *bub, uint8_t *buf, unsigned long s) {
 				"bub_send: invalid bub type!\n");
 			break;
 		case BUB_TYPE_SERIAL:
-			return(serial_send(bub->serial_fd, buf, s));
+			r = serial_send(bub->serial_fd, buf, s);
 			break;
 		case BUB_TYPE_FTDI:
-			return(ftdic_send(bub->ftdic, buf, s));
+			r = ftdic_send(bub->ftdic, buf, s);
 			break;
 	}
 
-	return(-1);
+	return(r);
 }
 
 int bub_fetch(bub_t *bub, uint8_t *buf, unsigned long s) {
+
+	int r = -1;
 
 	if(bub == NULL) {
 		fprintf(stderr, "bub_fetch: invalid bub context passed!\n");
@@ -182,17 +183,19 @@ int bub_fetch(bub_t *bub, uint8_t *buf, unsigned long s) {
 				"bub_fetch: invalid bub type!\n");
 			break;
 		case BUB_TYPE_SERIAL:
-			return(serial_fetch(bub->serial_fd, buf, s));
+			r = serial_fetch(bub->serial_fd, buf, s);
 			break;
 		case BUB_TYPE_FTDI:
-			return(ftdic_fetch(bub->ftdic, buf, s));
+			r = ftdic_fetch(bub->ftdic, buf, s);
 			break;
 	}
 
-	return(-1);
+	return(r);
 }
 
 int bub_deinit(bub_t *bub) {
+
+	int r = -1;
 
 	if(bub == NULL) {
 		fprintf(stderr, "bub_deinit: invalid bub context passed!\n");
@@ -205,12 +208,12 @@ int bub_deinit(bub_t *bub) {
 				"bub_deinit: invalid bub type!\n");
 			break;
 		case BUB_TYPE_SERIAL:
-			serial_deinit(bub->serial_fd);
+			r = serial_deinit(bub->serial_fd);
 			break;
 		case BUB_TYPE_FTDI:
-			ftdic_deinit(bub->ftdic);
+			r = ftdic_deinit(bub->ftdic);
 			break;
 	}
 
-	return(-1);
+	return(r);
 }

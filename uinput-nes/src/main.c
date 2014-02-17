@@ -1,6 +1,6 @@
 /* This file is part of uinput-nes.
  *
- * Copyright (C) 2013 Kristian Gunstone 
+ * Copyright (C) 2013, 2014 Kristian Gunstone 
  *
  * uinput-nes is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
