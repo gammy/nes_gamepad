@@ -20,17 +20,17 @@
 #include "serial.h"
 
 enum {
-	BUB_TYPE_SERIAL, 
-	BUB_TYPE_FTDI
+    BUB_TYPE_SERIAL, 
+    BUB_TYPE_FTDI
 };
 
 typedef struct {
-	struct ftdi_context *ftdic;                // FTDI interface
-	unsigned int        ftdi_pid, ftdi_vid;    // FTDI interface
-	int                 serial_fd;             // Serial interface
-	char                *serial_dev;           // Serial interface
-	unsigned int        baud_rate;             // Both interfaces
-	int                 type;                  
+    struct ftdi_context *ftdic;                // FTDI interface
+    unsigned int        ftdi_pid, ftdi_vid;    // FTDI interface
+    int                 serial_fd;             // Serial interface
+    char                *serial_dev;           // Serial interface
+    unsigned int        baud_rate;             // Both interfaces
+    int                 type;                  
 } bub_t;
 
 bub_t * bub_init(unsigned int type);

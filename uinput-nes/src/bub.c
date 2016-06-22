@@ -20,200 +20,200 @@
 
 bub_t *bub_init(unsigned int type) {
 
-	bub_t *bub = malloc(sizeof(char) * sizeof(bub_t));
+    bub_t *bub = malloc(sizeof(char) * sizeof(bub_t));
 
-	if(bub == NULL) {
-		fprintf(stderr, "bub_init: unable to allocate memory for bub: %s\n",
-			strerror(errno));
-		return(NULL);
-	}
+    if(bub == NULL) {
+        fprintf(stderr, "bub_init: unable to allocate memory for bub: %s\n",
+            strerror(errno));
+        return(NULL);
+    }
 
-	memset(bub, 0, sizeof(char) * sizeof(bub_t));
+    memset(bub, 0, sizeof(char) * sizeof(bub_t));
 
-	bub->type = type;
+    bub->type = type;
 
-	return(bub);
+    return(bub);
 }
 
 int bub_connect(bub_t *bub) {
 
-	if(bub == NULL) {
-		fprintf(stderr, "bub_connect: invalid bub context passed!\n");
-		return(-1);
-	}
+    if(bub == NULL) {
+        fprintf(stderr, "bub_connect: invalid bub context passed!\n");
+        return(-1);
+    }
 
-	switch(bub->type) {
-		default:
-			fprintf(stderr, 
-				"bub_connect: invalid bub type!\n");
-			return(-1);
-			break;
-		case BUB_TYPE_SERIAL:
-			// FIXME check if we need to clean up!
-			bub->serial_fd = serial_init(bub->serial_dev);
+    switch(bub->type) {
+        default:
+            fprintf(stderr, 
+                "bub_connect: invalid bub type!\n");
+            return(-1);
+            break;
+        case BUB_TYPE_SERIAL:
+            // FIXME check if we need to clean up!
+            bub->serial_fd = serial_init(bub->serial_dev);
 
-			if(bub->serial_fd < 0)
-				return(-1);
-			break;
-		case BUB_TYPE_FTDI:
-			bub->ftdic = ftdic_init(bub->ftdi_vid, 
-						bub->ftdi_pid, 
-						bub->baud_rate, 0, 0, 0);
+            if(bub->serial_fd < 0)
+                return(-1);
+            break;
+        case BUB_TYPE_FTDI:
+            bub->ftdic = ftdic_init(bub->ftdi_vid, 
+                        bub->ftdi_pid, 
+                        bub->baud_rate, 0, 0, 0);
 
-			if(bub->ftdic == NULL)
-				return(-1);
-			break;
-	}
+            if(bub->ftdic == NULL)
+                return(-1);
+            break;
+    }
 
-	return(0);
+    return(0);
 }
 
 int bub_iflush(bub_t *bub) {
 
-	int r = -1;
+    int r = -1;
 
-	if(bub == NULL) {
-		fprintf(stderr, "bub_iflush: invalid bub context passed!\n");
-		return(-1);
-	}
+    if(bub == NULL) {
+        fprintf(stderr, "bub_iflush: invalid bub context passed!\n");
+        return(-1);
+    }
 
-	switch(bub->type) {
-		default:
-			fprintf(stderr, 
-				"bub_iflush: invalid bub type!\n");
-			break;
-		case BUB_TYPE_SERIAL:
-			r = serial_flush(bub->serial_fd, TCIFLUSH);
-			break;
-		case BUB_TYPE_FTDI:
-			r = ftdic_iflush(bub->ftdic);
-			break;
-	}
+    switch(bub->type) {
+        default:
+            fprintf(stderr, 
+                "bub_iflush: invalid bub type!\n");
+            break;
+        case BUB_TYPE_SERIAL:
+            r = serial_flush(bub->serial_fd, TCIFLUSH);
+            break;
+        case BUB_TYPE_FTDI:
+            r = ftdic_iflush(bub->ftdic);
+            break;
+    }
 
-	return(r);
+    return(r);
 }
 
 int bub_oflush(bub_t *bub) {
 
-	int r = -1;
+    int r = -1;
 
-	if(bub == NULL) {
-		fprintf(stderr, "bub_oflush: invalid bub context passed!\n");
-		return(-1);
-	}
+    if(bub == NULL) {
+        fprintf(stderr, "bub_oflush: invalid bub context passed!\n");
+        return(-1);
+    }
 
-	switch(bub->type) {
-		default:
-			fprintf(stderr, 
-				"bub_oflush: invalid bub type!\n");
-			break;
-		case BUB_TYPE_SERIAL:
-			r = serial_flush(bub->serial_fd, TCOFLUSH);
-			break;
-		case BUB_TYPE_FTDI:
-			r = ftdic_oflush(bub->ftdic);
-			break;
-	}
+    switch(bub->type) {
+        default:
+            fprintf(stderr, 
+                "bub_oflush: invalid bub type!\n");
+            break;
+        case BUB_TYPE_SERIAL:
+            r = serial_flush(bub->serial_fd, TCOFLUSH);
+            break;
+        case BUB_TYPE_FTDI:
+            r = ftdic_oflush(bub->ftdic);
+            break;
+    }
 
-	return(r);
+    return(r);
 }
 
 int bub_flush(bub_t *bub) {
 
-	int r = -1;
+    int r = -1;
 
-	if(bub == NULL) {
-		fprintf(stderr, "bub_flush: invalid bub context passed!\n");
-		return(-1);
-	}
+    if(bub == NULL) {
+        fprintf(stderr, "bub_flush: invalid bub context passed!\n");
+        return(-1);
+    }
 
-	switch(bub->type) {
-		default:
-			fprintf(stderr, 
-				"bub_flush: invalid bub type!\n");
-			break;
-		case BUB_TYPE_SERIAL:
-			r = serial_flush(bub->serial_fd, TCIOFLUSH);
-			break;
-		case BUB_TYPE_FTDI:
-			r = ftdic_flush(bub->ftdic);
-			break;
-	}
+    switch(bub->type) {
+        default:
+            fprintf(stderr, 
+                "bub_flush: invalid bub type!\n");
+            break;
+        case BUB_TYPE_SERIAL:
+            r = serial_flush(bub->serial_fd, TCIOFLUSH);
+            break;
+        case BUB_TYPE_FTDI:
+            r = ftdic_flush(bub->ftdic);
+            break;
+    }
 
-	return(r);
+    return(r);
 }
 
 int bub_send(bub_t *bub, uint8_t *buf, unsigned long s) {
 
-	int r = -1;
+    int r = -1;
 
-	if(bub == NULL) {
-		fprintf(stderr, "bub_send: invalid bub context passed!\n");
-		return(-1);
-	}
+    if(bub == NULL) {
+        fprintf(stderr, "bub_send: invalid bub context passed!\n");
+        return(-1);
+    }
 
-	switch(bub->type) {
-		default:
-			fprintf(stderr, 
-				"bub_send: invalid bub type!\n");
-			break;
-		case BUB_TYPE_SERIAL:
-			r = serial_send(bub->serial_fd, buf, s);
-			break;
-		case BUB_TYPE_FTDI:
-			r = ftdic_send(bub->ftdic, buf, s);
-			break;
-	}
+    switch(bub->type) {
+        default:
+            fprintf(stderr, 
+                "bub_send: invalid bub type!\n");
+            break;
+        case BUB_TYPE_SERIAL:
+            r = serial_send(bub->serial_fd, buf, s);
+            break;
+        case BUB_TYPE_FTDI:
+            r = ftdic_send(bub->ftdic, buf, s);
+            break;
+    }
 
-	return(r);
+    return(r);
 }
 
 int bub_fetch(bub_t *bub, uint8_t *buf, unsigned long s) {
 
-	int r = -1;
+    int r = -1;
 
-	if(bub == NULL) {
-		fprintf(stderr, "bub_fetch: invalid bub context passed!\n");
-		return(-1);
-	}
+    if(bub == NULL) {
+        fprintf(stderr, "bub_fetch: invalid bub context passed!\n");
+        return(-1);
+    }
 
-	switch(bub->type) {
-		default:
-			fprintf(stderr, 
-				"bub_fetch: invalid bub type!\n");
-			break;
-		case BUB_TYPE_SERIAL:
-			r = serial_fetch(bub->serial_fd, buf, s);
-			break;
-		case BUB_TYPE_FTDI:
-			r = ftdic_fetch(bub->ftdic, buf, s);
-			break;
-	}
+    switch(bub->type) {
+        default:
+            fprintf(stderr, 
+                "bub_fetch: invalid bub type!\n");
+            break;
+        case BUB_TYPE_SERIAL:
+            r = serial_fetch(bub->serial_fd, buf, s);
+            break;
+        case BUB_TYPE_FTDI:
+            r = ftdic_fetch(bub->ftdic, buf, s);
+            break;
+    }
 
-	return(r);
+    return(r);
 }
 
 int bub_deinit(bub_t *bub) {
 
-	int r = -1;
+    int r = -1;
 
-	if(bub == NULL) {
-		fprintf(stderr, "bub_deinit: invalid bub context passed!\n");
-		return(-1);
-	}
+    if(bub == NULL) {
+        fprintf(stderr, "bub_deinit: invalid bub context passed!\n");
+        return(-1);
+    }
 
-	switch(bub->type) {
-		default:
-			fprintf(stderr, 
-				"bub_deinit: invalid bub type!\n");
-			break;
-		case BUB_TYPE_SERIAL:
-			r = serial_deinit(bub->serial_fd);
-			break;
-		case BUB_TYPE_FTDI:
-			r = ftdic_deinit(bub->ftdic);
-			break;
-	}
+    switch(bub->type) {
+        default:
+            fprintf(stderr, 
+                "bub_deinit: invalid bub type!\n");
+            break;
+        case BUB_TYPE_SERIAL:
+            r = serial_deinit(bub->serial_fd);
+            break;
+        case BUB_TYPE_FTDI:
+            r = ftdic_deinit(bub->ftdic);
+            break;
+    }
 
-	return(r);
+    return(r);
 }

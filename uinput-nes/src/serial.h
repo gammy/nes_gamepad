@@ -26,9 +26,9 @@
 #include <unistd.h>
 #include <stdio.h>
 
-#define SERIAL_PORT		"/dev/ttyACM0"
-#define SERIAL_BAUDRATE		B57600 // Defined in termbits.h from termios.h
-#define _POSIX_SOURCE		1
+#define SERIAL_PORT     "/dev/ttyACM0"
+#define SERIAL_BAUDRATE     B57600 // Defined in termbits.h from termios.h
+#define _POSIX_SOURCE       1
 
 struct termios serial_oldtio, serial_newtio;
 

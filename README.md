@@ -16,7 +16,7 @@ Components
 `uinput-nes`: A Linux userland driver which creates 1-4 standard joystick interfaces 
 representing a real NES gamepad/controller. 
 It relies on nes_arduino_relay (or something which does the same job) for 
-requesting and receiving controller state data from an FTDI virtual serial 
+requesting and receiving controller state data from a virtual serial 
 interface.
 
 `nes_arduino_relay`: An Arduino sketch which can decode NES gamepad data from up to 4 controllers.
@@ -85,7 +85,7 @@ Sets up the D-pad (up, down, left, right) as standard buttons (1, 2, 3, 4) rathe
 
 `--passthrough`
 
-uinput-nes will normally just pass on controller state changes to the uinput subsystem. For example, if A is pressed, that state change("A was pressed down") is sent. If the state of the controller remains the same, nothing is sent. In passthrough mode, all states read are immediately passed on rather than discarded. Some programs such as `mednafen` require the passthrough option as it expects key repetitions during a certain timeframe in order to set up the controllers. I've so far not come across any other programs requiring it.
+uinput-nes will normally just pass on controller state changes to the uinput subsystem. For example, if A is pressed, that state change("A was pressed down") is sent. If the state of the controller remains the same, nothing is sent. In passthrough mode, all states read are immediately passed on rather than discarded. Some programs such as mednafen require the passthrough option as it expects key repetitions during a certain timeframe in order to set up the controllers. I've so far not come across any other programs requiring it.
 
 `--daemon`
 

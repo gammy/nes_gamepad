@@ -36,10 +36,10 @@
 #define AXIS_MAX         32767
 
 typedef struct {
-	int fd;
-	int num;
-	uint8_t state;
-	uint8_t last;
+    int fd;
+    int num;
+    uint8_t state;
+    uint8_t last;
 } pad_t;
 
 int  uinput_init(int device_number, int buttons_only);

@@ -24,11 +24,11 @@ int ftdic_flush(struct ftdi_context *ftdic);
 
 struct ftdi_context *
 ftdic_init(unsigned int vendor_id,
-	 unsigned int product_id,
-	 unsigned int baud_rate,
-	 unsigned char latency,
-	 unsigned int tx_buf_size,
-	 unsigned int rx_buf_size);
+     unsigned int product_id,
+     unsigned int baud_rate,
+     unsigned char latency,
+     unsigned int tx_buf_size,
+     unsigned int rx_buf_size);
 
 long 
 ftdic_send(struct ftdi_context *ftdic, uint8_t *buf, unsigned long s);
@@ -36,6 +36,6 @@ long
 ftdic_fetch(struct ftdi_context *ftdic, uint8_t *buf, unsigned long s);
 int ftdic_deinit(struct ftdi_context *ftdic);
 struct ftdi_context *ftdic_connect(unsigned int vendor_id, 
-				 unsigned int product_id);
+                 unsigned int product_id);
 
 #endif
