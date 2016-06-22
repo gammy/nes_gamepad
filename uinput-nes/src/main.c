@@ -32,6 +32,7 @@ void usage(char *me) {
            "-n  --noaxis          Emulate D-pad with buttons                (default: off)\n"
            "-N  --noftdi          Don't talk to FTDI (for Leonardo, etc)    (default: off)\n"
            "-P  --passthrough     Pass through data, not just state changes (default: off)\n"
+           "-k  --keyboard [keys] Simulate key presses                      (default: off)\n"
            "-d  --daemon          Become a daemon(background process)       (default: off)\n"
            "-D  --hwid <vid:pid>  Use <vid:pid> as vendor/product id  (default: 0403:6001)\n"
            "-s  --serialdev <dev> Use <dev> as serial device       (default: /dev/ttyACM0)\n"
@@ -51,6 +52,7 @@ int main(int argc, char *argv[]) {
         {"noaxis",     no_argument,       NULL, 'n'},
         {"noftdi",     no_argument,       NULL, 'N'},
         {"passthrough",no_argument,       NULL, 'P'},
+        {"keyboard",   optional_argument, NULL, 'k'}, // FIXME
         {"daemon",     no_argument,       NULL, 'd'},
         {"hwid",       required_argument, NULL, 'D'},
         {"serialdev",  required_argument, NULL, 's'},
@@ -59,12 +61,14 @@ int main(int argc, char *argv[]) {
         {NULL,         0,                 NULL,  0}
     };
 
+    const char *short_options = "p:v:nNPk:dD:s:Vh";
+
     int i;
 
     pad_t pad[PADS_MAX];
 
     int numpads      = 1;
-    int buttons_only = 0;
+    int emulation_mode = UINPUT_MODE_JOYSTICK;
     int passthrough  = 0;
     int daemonize    = 0;
 
@@ -76,7 +80,7 @@ int main(int argc, char *argv[]) {
     int usb_product  = 0x6001;
     verbosity        = 0;
 
-    while((i = getopt_long(argc, argv, "p:v:nNPdD:s:Vh", long_options, NULL)) != -1){
+    while((i = getopt_long(argc, argv, short_options, long_options, NULL)) != -1) {
         switch(i) {
             case 'p':
                 numpads = atoi(optarg);
@@ -85,13 +89,17 @@ int main(int argc, char *argv[]) {
                 verbosity = atoi(optarg);
                 break;
             case 'n':
-                buttons_only = 1;
+                emulation_mode = UINPUT_MODE_JOYSTICK_NO_AXIS;
                 break;
             case 'N':
                 iface_type = BUB_TYPE_SERIAL;
                 break;
             case 'P':
                 passthrough = 1;
+                break;
+            case 'k':
+                // TODO get keys from optarg
+                emulation_mode = UINPUT_MODE_KEYBOARD;
                 break;
             case 'd':
                 daemonize = 1;
@@ -108,6 +116,7 @@ int main(int argc, char *argv[]) {
                 break;
             case 's':
                 serial_dev = optarg;
+
                 break;
             case 'h':
                 usage(basename(argv[0]));
@@ -144,7 +153,7 @@ int main(int argc, char *argv[]) {
         memset(&pad[i], 0, sizeof(pad_t));
 
         pad[i].num = 1 + i;
-        pad[i].fd = uinput_init(pad[i].num, buttons_only);
+        pad[i].fd = uinput_init(pad[i].num, emulation_mode);
 
         if(pad[i].fd < 0)
             return(pad[i].fd);
@@ -219,7 +228,7 @@ int main(int argc, char *argv[]) {
             p->num   = num;
 
             if(p->state != p->last || passthrough) {
-                uinput_map(p, buttons_only);
+                uinput_map(p, emulation_mode);
                 p->last = p->state;
             }
 

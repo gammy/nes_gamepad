@@ -16,7 +16,7 @@
 #include "main.h"
 #include "uinput.h"
 
-int uinput_init(int device_number, int buttons_only) {
+int uinput_init(int device_number, int mode) {
 
     int fd, i, r, numbuttons;
     struct uinput_user_dev uidev;
@@ -25,13 +25,29 @@ int uinput_init(int device_number, int buttons_only) {
                            "Up", "Down",  "Left",  "Right"};
 
     int button[] = {BTN_A, BTN_B, BTN_START, BTN_SELECT, 
-                        BTN_0, BTN_1,     BTN_2, BTN_3};
+                    BTN_0, BTN_1,     BTN_2, BTN_3};
     int axis[]   = {ABS_X, ABS_Y};
 
-    if(buttons_only)
-        numbuttons = 8;
-    else
-        numbuttons = 4;
+    switch(mode) {
+        default:
+        case UINPUT_MODE_JOYSTICK:
+            numbuttons = 4;
+            break;
+        case UINPUT_MODE_KEYBOARD:
+            button[0] = KEY_SPACE;     // A
+            button[1] = KEY_LEFTCTRL;  // B
+            button[2] = KEY_ENTER;     // Start
+            button[3] = KEY_E;         // Select
+            button[4] = KEY_UP;        // Up
+            button[5] = KEY_DOWN;      // Down
+            button[6] = KEY_LEFT;      // Left
+            button[7] = KEY_RIGHT;     // Right
+            numbuttons = 8;
+            break;
+        case UINPUT_MODE_JOYSTICK_NO_AXIS:
+            numbuttons = 8;
+            break;
+    }
 
     if(verbosity > 1)
         fprintf(stderr, "uinput_init(%d)\n", device_number);
@@ -45,6 +61,11 @@ int uinput_init(int device_number, int buttons_only) {
     uidev.id.bustype = BUS_USB;
     uidev.id.vendor  = 0x1; // FIXME
     uidev.id.product = 0x2; // GC_NES in the gamecon driver (irrelevant)
+    if(mode == UINPUT_MODE_KEYBOARD) {
+        uidev.id.product = 0xfecd; // GC_NES in the gamecon driver (irrelevant)
+        uidev.id.vendor = 0x1234; // GC_NES in the gamecon driver (irrelevant)
+    }
+
     uidev.id.version = 1;
 
     // XXX is /dev/input/uinput on some systems ?
@@ -89,7 +110,7 @@ int uinput_init(int device_number, int buttons_only) {
         }
     }
 
-    if(! buttons_only) {
+    if(mode == UINPUT_MODE_JOYSTICK) {
         // Add the axes
         for(i = 0; i < 2; i++) {
 
@@ -176,7 +197,7 @@ void printbits(uint8_t b) {
     return;
 }
 
-void uinput_map(pad_t *pad, int buttons_only) {
+void uinput_map(pad_t *pad, int mode) {
 
     static unsigned long count = 0;
 
@@ -201,31 +222,57 @@ void uinput_map(pad_t *pad, int buttons_only) {
         count++;
     }
 
-    if(buttons_only) {
-        uinput_send(pad, EV_KEY, BTN_0,    IS_UP(state));
-        uinput_send(pad, EV_KEY, BTN_1,  IS_DOWN(state));
-        uinput_send(pad, EV_KEY, BTN_2,  IS_LEFT(state));
-        uinput_send(pad, EV_KEY, BTN_3, IS_RIGHT(state));
-    } else {
-        if(IS_UP(state))
-            uinput_send(pad, EV_ABS, ABS_Y, AXIS_MIN);
-        else if(IS_DOWN(state))
-            uinput_send(pad, EV_ABS, ABS_Y, AXIS_MAX);
-        else
-            uinput_send(pad, EV_ABS, ABS_Y,  0);
+    switch(mode) {
+        default:
 
-        if(IS_LEFT(state))
-            uinput_send(pad, EV_ABS, ABS_X, AXIS_MIN);
-        else if(IS_RIGHT(state))
-            uinput_send(pad, EV_ABS, ABS_X, AXIS_MAX);
-        else
-            uinput_send(pad, EV_ABS, ABS_X,  0);
+        case UINPUT_MODE_JOYSTICK:
+            if(IS_UP(state))
+                uinput_send(pad, EV_ABS, ABS_Y, AXIS_MIN);
+            else if(IS_DOWN(state))
+                uinput_send(pad, EV_ABS, ABS_Y, AXIS_MAX);
+            else
+                uinput_send(pad, EV_ABS, ABS_Y,  0);
+
+            if(IS_LEFT(state))
+                uinput_send(pad, EV_ABS, ABS_X, AXIS_MIN);
+            else if(IS_RIGHT(state))
+                uinput_send(pad, EV_ABS, ABS_X, AXIS_MAX);
+            else
+                uinput_send(pad, EV_ABS, ABS_X,  0);
+            break;
+
+            uinput_send(pad, EV_KEY,  BTN_START,  IS_START(state));
+            uinput_send(pad, EV_KEY, BTN_SELECT, IS_SELECT(state));
+            uinput_send(pad, EV_KEY,      BTN_A,      IS_A(state));
+            uinput_send(pad, EV_KEY,      BTN_B,      IS_B(state));
+
+        case UINPUT_MODE_JOYSTICK_NO_AXIS:
+            uinput_send(pad, EV_KEY, BTN_0,    IS_UP(state));
+            uinput_send(pad, EV_KEY, BTN_1,  IS_DOWN(state));
+            uinput_send(pad, EV_KEY, BTN_2,  IS_LEFT(state));
+            uinput_send(pad, EV_KEY, BTN_3, IS_RIGHT(state));
+
+            uinput_send(pad, EV_KEY,  BTN_START,  IS_START(state));
+            uinput_send(pad, EV_KEY, BTN_SELECT, IS_SELECT(state));
+            uinput_send(pad, EV_KEY,      BTN_A,      IS_A(state));
+            uinput_send(pad, EV_KEY,      BTN_B,      IS_B(state));
+            break;
+
+            // Ugh hacky
+        case UINPUT_MODE_KEYBOARD:
+            uinput_send(pad, EV_KEY, KEY_UP,    IS_UP(state));
+            uinput_send(pad, EV_KEY, KEY_DOWN,  IS_DOWN(state));
+            uinput_send(pad, EV_KEY, KEY_LEFT,  IS_LEFT(state));
+            uinput_send(pad, EV_KEY, KEY_RIGHT, IS_RIGHT(state));
+
+            uinput_send(pad, EV_KEY, KEY_ENTER,     IS_START(state));
+            uinput_send(pad, EV_KEY, KEY_E,         IS_SELECT(state));
+            //uinput_send(pad, EV_KEY, KEY_UP,     IS_A(state)); // Limbo :P
+            uinput_send(pad, EV_KEY, KEY_SPACE,     IS_A(state));
+            uinput_send(pad, EV_KEY, KEY_LEFTCTRL,  IS_B(state));
+            break;
     }
 
-    uinput_send(pad, EV_KEY,  BTN_START,  IS_START(state));
-    uinput_send(pad, EV_KEY, BTN_SELECT, IS_SELECT(state));
-    uinput_send(pad, EV_KEY,      BTN_A,      IS_A(state));
-    uinput_send(pad, EV_KEY,      BTN_B,      IS_B(state));
 
     uinput_send(pad, EV_SYN, SYN_REPORT, 0);
 

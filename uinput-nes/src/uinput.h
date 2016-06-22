@@ -20,6 +20,10 @@
 #include <linux/input.h>
 #include <linux/uinput.h>
 
+#define UINPUT_MODE_JOYSTICK            0
+#define UINPUT_MODE_JOYSTICK_NO_AXIS    1
+#define UINPUT_MODE_KEYBOARD            2
+
 #define IS_RIGHT(x)     ((x & (1 << 0)) >> 0)
 #define IS_LEFT(x)      ((x & (1 << 1)) >> 1)
 #define IS_DOWN(x)      ((x & (1 << 2)) >> 2)
