@@ -24,28 +24,45 @@ int uinput_init(int device_number, int mode) {
     char *button_name[] = {"A",     "B", "Start", "Select", 
                            "Up", "Down",  "Left",  "Right"};
 
-    int button[] = {BTN_A, BTN_B, BTN_START, BTN_SELECT, 
-                    BTN_0, BTN_1,     BTN_2, BTN_3};
+    int kbdkey[] = {
+            KEY_SPACE,     // A
+            KEY_LEFTCTRL,  // B
+            KEY_ENTER,     // Start
+            KEY_E,         // Select
+            KEY_UP,        // Up
+            KEY_DOWN,      // Down
+            KEY_LEFT,      // Left
+            KEY_RIGHT      // Right
+    };
+
+    int button[] = {
+        BTN_A, 
+        BTN_B, 
+        BTN_START, 
+        BTN_SELECT, 
+        BTN_0, 
+        BTN_1,     
+        BTN_2, 
+        BTN_3
+    };
+
+    int *keyptr = NULL;
+
     int axis[]   = {ABS_X, ABS_Y};
 
     switch(mode) {
         default:
         case UINPUT_MODE_JOYSTICK:
             numbuttons = 4;
-            break;
-        case UINPUT_MODE_KEYBOARD:
-            button[0] = KEY_SPACE;     // A
-            button[1] = KEY_LEFTCTRL;  // B
-            button[2] = KEY_ENTER;     // Start
-            button[3] = KEY_E;         // Select
-            button[4] = KEY_UP;        // Up
-            button[5] = KEY_DOWN;      // Down
-            button[6] = KEY_LEFT;      // Left
-            button[7] = KEY_RIGHT;     // Right
-            numbuttons = 8;
+            keyptr = button;
             break;
         case UINPUT_MODE_JOYSTICK_NO_AXIS:
             numbuttons = 8;
+            keyptr = button;
+            break;
+        case UINPUT_MODE_KEYBOARD:
+            numbuttons = 8;
+            keyptr = kbdkey;
             break;
     }
 
@@ -61,11 +78,6 @@ int uinput_init(int device_number, int mode) {
     uidev.id.bustype = BUS_USB;
     uidev.id.vendor  = 0x1; // FIXME
     uidev.id.product = 0x2; // GC_NES in the gamecon driver (irrelevant)
-    if(mode == UINPUT_MODE_KEYBOARD) {
-        uidev.id.product = 0xfecd; // GC_NES in the gamecon driver (irrelevant)
-        uidev.id.vendor = 0x1234; // GC_NES in the gamecon driver (irrelevant)
-    }
-
     uidev.id.version = 1;
 
     // XXX is /dev/input/uinput on some systems ?
@@ -99,11 +111,11 @@ int uinput_init(int device_number, int mode) {
         if(verbosity > 1) {
             fprintf(stderr, "Adding key %d type %03x (%s)\n", 
                 1 + i, 
-                button[i],
+                keyptr[i],
                 button_name[i]);
         }
 
-        r = ioctl(fd, UI_SET_KEYBIT, button[i]);
+        r = ioctl(fd, UI_SET_KEYBIT, keyptr[i]);
         if(r < 0) {
             perror("ioctl");
             return(r);
@@ -258,16 +270,15 @@ void uinput_map(pad_t *pad, int mode) {
             uinput_send(pad, EV_KEY,      BTN_B,      IS_B(state));
             break;
 
-            // Ugh hacky
         case UINPUT_MODE_KEYBOARD:
-            uinput_send(pad, EV_KEY, KEY_UP,    IS_UP(state));
+            //uinput_send(pad, EV_KEY, KEY_UP,    IS_UP(state));
             uinput_send(pad, EV_KEY, KEY_DOWN,  IS_DOWN(state));
             uinput_send(pad, EV_KEY, KEY_LEFT,  IS_LEFT(state));
             uinput_send(pad, EV_KEY, KEY_RIGHT, IS_RIGHT(state));
 
             uinput_send(pad, EV_KEY, KEY_ENTER,     IS_START(state));
             uinput_send(pad, EV_KEY, KEY_E,         IS_SELECT(state));
-            //uinput_send(pad, EV_KEY, KEY_UP,     IS_A(state)); // Limbo :P
+            uinput_send(pad, EV_KEY, KEY_UP,     IS_A(state)); // Limbo :P
             uinput_send(pad, EV_KEY, KEY_SPACE,     IS_A(state));
             uinput_send(pad, EV_KEY, KEY_LEFTCTRL,  IS_B(state));
             break;
