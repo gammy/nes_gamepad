@@ -24,7 +24,7 @@ typedef struct {
     int num;
     uint8_t state;
     uint8_t last;
-    uint8_t kbdsym[8];
+    int kbdsym[8];
 } pad_t;
 
 enum key_index {

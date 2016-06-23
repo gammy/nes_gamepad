@@ -16,24 +16,13 @@
 #include "main.h"
 #include "uinput.h"
 
-int uinput_init(int device_number, int mode) {
+int uinput_init(pad_t *pad, int mode) {
 
     int fd, i, r, numbuttons;
     struct uinput_user_dev uidev;
 
     char *button_name[] = {"A",     "B", "Start", "Select", 
                            "Up", "Down",  "Left",  "Right"};
-
-    int kbdkey[] = {
-        KEY_SPACE,     // A
-        KEY_LEFTCTRL,  // B
-        KEY_ENTER,     // Start
-        KEY_E,         // Select
-        KEY_UP,        // Up
-        KEY_DOWN,      // Down
-        KEY_LEFT,      // Left
-        KEY_RIGHT      // Right
-    };
 
     int button[] = {
         BTN_A, 
@@ -62,19 +51,17 @@ int uinput_init(int device_number, int mode) {
             break;
         case UINPUT_MODE_KEYBOARD:
             numbuttons = 8;
-            keyptr = kbdkey;
+            keyptr = pad->kbdsym;
             break;
     }
 
     if(verbosity > 1)
-        fprintf(stderr, "uinput_init(%d)\n", device_number);
+        fprintf(stderr, "uinput_init(%d)\n", pad->num);
 
     memset(&uidev, 0, sizeof(struct uinput_user_dev));
 
     // Setup gamepad properties
-    snprintf(uidev.name, 
-         UINPUT_MAX_NAME_SIZE, 
-         "NES gamepad %d", device_number);
+    snprintf(uidev.name, UINPUT_MAX_NAME_SIZE, "NES gamepad %d", pad->num);
     uidev.id.bustype = BUS_USB;
     uidev.id.vendor  = 0x1; // FIXME
     uidev.id.product = 0x2; // GC_NES in the gamecon driver (irrelevant)
@@ -90,7 +77,7 @@ int uinput_init(int device_number, int mode) {
     }
 
     if(verbosity > 1)
-        fprintf(stderr, "Gamepad %d (fd %d)\n", device_number, fd);
+        fprintf(stderr, "Gamepad %d (fd %d)\n", pad->num, fd);
 
     // Add Key(buttons) type
     r = ioctl(fd, UI_SET_EVBIT, EV_KEY);
@@ -157,9 +144,10 @@ int uinput_init(int device_number, int mode) {
         perror("ioctl");
         return(r);
     }
+    
+    pad->fd = fd;
 
-    return(fd);
-
+    return(0);
 }
 
 void uinput_deinit(pad_t *pad) {
@@ -271,18 +259,7 @@ void uinput_map(pad_t *pad, int mode) {
             break;
 
         case UINPUT_MODE_KEYBOARD:
-#if 0
-            uinput_send(pad, EV_KEY, KEY_UP,    IS_UP(state));
-            uinput_send(pad, EV_KEY, KEY_DOWN,  IS_DOWN(state));
-            uinput_send(pad, EV_KEY, KEY_LEFT,  IS_LEFT(state));
-            uinput_send(pad, EV_KEY, KEY_RIGHT, IS_RIGHT(state));
-
-            uinput_send(pad, EV_KEY, KEY_ENTER,     IS_START(state));
-            uinput_send(pad, EV_KEY, KEY_E,         IS_SELECT(state));
-            uinput_send(pad, EV_KEY, KEY_SPACE,     IS_A(state));
-            uinput_send(pad, EV_KEY, KEY_LEFTCTRL,  IS_B(state));
-            uinput_send(pad, EV_KEY, KEY_UP,    IS_UP(state));
-#else
+            uinput_send(pad, EV_KEY, pad->kbdsym[INDEX_UP],    IS_UP(state));
             uinput_send(pad, EV_KEY, pad->kbdsym[INDEX_DOWN],  IS_DOWN(state));
             uinput_send(pad, EV_KEY, pad->kbdsym[INDEX_LEFT],  IS_LEFT(state));
             uinput_send(pad, EV_KEY, pad->kbdsym[INDEX_RIGHT], IS_RIGHT(state));
@@ -290,7 +267,6 @@ void uinput_map(pad_t *pad, int mode) {
             uinput_send(pad, EV_KEY, pad->kbdsym[INDEX_SELECT], IS_SELECT(state));
             uinput_send(pad, EV_KEY, pad->kbdsym[INDEX_A],      IS_A(state));
             uinput_send(pad, EV_KEY, pad->kbdsym[INDEX_B],      IS_B(state));
-#endif
             break;
     }
 

@@ -40,7 +40,7 @@
 #define AXIS_MIN        -32767
 #define AXIS_MAX         32767
 
-int  uinput_init(int device_number, int buttons_only);
+int uinput_init(pad_t *pad, int mode);
 void uinput_deinit(pad_t *pad);
 int  uinput_send(pad_t *pad, uint16_t type, uint16_t code, int32_t val);
 void uinput_map(pad_t *pad, int buttons_only);

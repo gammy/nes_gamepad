@@ -179,12 +179,11 @@ int main(int argc, char *argv[]) {
         //memset(&pad[i], 0, sizeof(pad_t));
 
         pad[i].num = 1 + i;
-        pad[i].fd = uinput_init(pad[i].num, emulation_mode);
         pad[i].state = pad[i].last = 0;
 
-        if(pad[i].fd < 0)
-            return(pad[i].fd);
-
+        if(uinput_init(&pad[i], emulation_mode) != 0) {
+            return(EXIT_FAILURE);
+        }
     }
 
     if(daemonize) {

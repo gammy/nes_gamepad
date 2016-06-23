@@ -170,9 +170,7 @@ int kbd_get_code(char *name) {
     unsigned i;
     size_t num_keys = sizeof(kbd_list) / sizeof(struct kbd_keyval);
     for(i = 0; i < num_keys; i++) {
-        //printf("kbd_get_code: %d: source_name = \"%s\"\n", i, source_name);
         if(strcasecmp(kbd_list[i].name, name) == 0) {
-            printf("FOUND! %s maps to %d (index %d)\n", name, kbd_list[i].code, i);
             return(kbd_list[i].code);
         }
     }
@@ -181,11 +179,10 @@ int kbd_get_code(char *name) {
 
 /*
    Parse the options provided from the commandline
-   Input example: "a1:CTRL,b1:SPACE,up:UP"
+   Input example: "a1:CTRL,b1:SPACE,up1:UP"
    (token:value,token:value,[..])
 
-   @param char *options      Commandline option pointer
-   @returns long 0 on success, nonzero on serious failure
+   @returns long 0 on success, nonzero on failure
 */
 int kbdopt_parse(char *opts, pad_t *pads, size_t num_pads) {
 
@@ -196,7 +193,9 @@ int kbdopt_parse(char *opts, pad_t *pads, size_t num_pads) {
     }
     int failed = 0;
     char *token = NULL;
-    printf("kbdopt_parse opts: %s\n", opts_cpy);
+
+    if(verbosity > 2)
+        printf("kbdopt_parse opts: %s\n", opts_cpy);
 
     token = strtok(opts_cpy, ":");
 
@@ -211,84 +210,35 @@ int kbdopt_parse(char *opts, pad_t *pads, size_t num_pads) {
 
     for(;;)
     {
-        //printf("BEGIN LOOP\n");
         if(token == NULL)
         {
             break;
         }
 
-        printf("kbdopt_parse: token: \"%s\"\n", token);
+        for(i = 0; i < 8; i++) {
 
-        for(unsigned player = 0; player < num_pads; player++) { 
-            pad_t *pad = &pads[player];
+            for(unsigned player = 0; player < num_pads; player++) { 
+                pad_t *pad = &pads[player];
 
-            for(i = 0; i < 8; i++) {
                 if(strcasecmp(token, button_tokens[player][i]) == 0) {
-//                    printf("Case match suckaaaaa\n");
                     token = strtok(NULL, ",");
                     if(token) {
-//                        printf("Token!\n");
                         int keycode = kbd_get_code(token);
                         if(keycode == -1) {
                             fprintf(stderr, "%s: invalid token\n", token);
                             failed = 1;
                             continue;
                         }
+                        if(verbosity > 1) {
+                            printf("%s maps to %s (%d) \n", 
+                                   button_tokens[player][i], 
+                                   token, keycode);
+                        }
                         pad->kbdsym[i] = keycode;
-
-//                        printf("Mapping %s (player %u) to %u\n", 
-//                               button_tokens[player][i],
-//                               player,
-//                               keycode);
                     }
-                }
+                } 
             }
         }
-
-#if 0
-        if(strcmp(token, "a1") == 0)
-        {
-            token = strtok(NULL, ",");
-            if(token)
-            {
-                keycode = kbd_get_code(token);
-            }
-        }
-        else if(strcmp(token, "ipd_id") == 0)
-        {
-            token = strtok(NULL, ",");
-            if(token)
-            {
-                errno = 0;
-                int value = strtol(token, NULL, 10 /* base */);
-                if(errno != 0)
-                {
-                    perror("strtol in automap_parse_args");
-                    failed = errno;
-                    errno = 0;
-                    break;
-                }
-                automap->ipd_id = value;
-            }
-        }
-        else if(strcmp(token, "threshold_volts") == 0)
-        {
-            token = strtok(NULL, ",");
-            if(token)
-            {
-                errno = 0;
-                double value = strtod(token, NULL);
-                if(errno != 0)
-                {
-                    perror("strtol in automap_parse_args");
-                    failed = errno;
-                    errno = 0;
-                    break;
-                }
-                automap->ipd_threshold = value;
-            }
-        }
-#endif
 
         token = strtok(NULL, ":");
     }

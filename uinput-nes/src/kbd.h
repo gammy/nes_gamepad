@@ -23,6 +23,8 @@
 #include <linux/input-event-codes.h>
 #include "pad.h"
 
+extern int verbosity;
+
 struct kbd_keyval {
     char *name;
     int code;
@@ -30,7 +32,5 @@ struct kbd_keyval {
 
 void kbd_print_keys(void);
 int kbd_get_code(char *target_name);
-//int kbdopt_parse(char *opts, int **keymap);
-//int kbdopt_parse(char *opts, int *keymap[8], size_t keymap_elems);
 int kbdopt_parse(char *opts, pad_t *pads, size_t num_pads);
 #endif
