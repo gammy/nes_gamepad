@@ -31,7 +31,7 @@ void usage(char *me) {
            "-p  --pads <number>   Simulate <number> joypads           (default: 1, max: 4)\n"
            "-v  --verbose <level> Verbosity level <level>             (default: 0, max: 2)\n"
            "-n  --noaxis          Emulate D-pad with buttons                (default: off)\n"
-           "-N  --noftdi          Don't talk to FTDI (for Leonardo, etc)    (default: off)\n"
+           "-N  --ftdi            Use FTDI interface (older boards)         (default: off)\n"
            "-P  --passthrough     Pass through data, not just state changes (default: off)\n"
            "-k  --keyboard [keys] Simulate key presses                      (default: \"default\")\n"
            "-d  --daemon          Become a daemon(background process)       (default: off)\n"
@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
         {"pads",       required_argument, NULL, 'p'},
         {"verbose",    required_argument, NULL, 'v'},
         {"noaxis",     no_argument,       NULL, 'n'},
-        {"noftdi",     no_argument,       NULL, 'N'},
+        {"ftdi",       no_argument,       NULL, 'f'},
         {"passthrough",no_argument,       NULL, 'P'},
         {"keyboard",   required_argument, NULL, 'k'},
         {"daemon",     no_argument,       NULL, 'd'},
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
         {NULL,         0,                 NULL,  0}
     };
 
-    const char *short_options = "p:v:nNPk:dD:s:Vh";
+    const char *short_options = "p:v:nfPk:dD:s:Vh";
 
     int i;
 
@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
     int passthrough  = 0;
     int daemonize    = 0;
 
-    int iface_type   = BUB_TYPE_FTDI;
+    int iface_type   = BUB_TYPE_SERIAL;
 
     char *serial_dev = SERIAL_PORT;
     char *tmp_vendor = NULL;
@@ -111,14 +111,13 @@ int main(int argc, char *argv[]) {
             case 'n':
                 emulation_mode = UINPUT_MODE_JOYSTICK_NO_AXIS;
                 break;
-            case 'N':
-                iface_type = BUB_TYPE_SERIAL;
+            case 'f':
+                iface_type = BUB_TYPE_FTDI;
                 break;
             case 'P':
                 passthrough = 1;
                 break;
             case 'k':
-                printf("--------------------------------------------------------------------------------------\n");
                 emulation_mode = UINPUT_MODE_KEYBOARD;
                 if(strncasecmp(optarg, "default", strlen("default")) != 0) {
                     if(kbdopt_parse(optarg, pad, numpads ) != 0) { // FIXME numpads must precede this argument :/
