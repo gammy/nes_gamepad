@@ -16,7 +16,7 @@ pre-build:
 	@echo
 
 post-build: main-build
-	@strip $(EXE)
+	#	@strip $(EXE)
 	@echo
 	@echo "Success: $(EXE)"
 

@@ -16,6 +16,7 @@
  * along with uinput-nes.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "main.h"
+#include "kbd.h"
 #include <getopt.h>
 #include <libgen.h>
 
@@ -32,7 +33,7 @@ void usage(char *me) {
            "-n  --noaxis          Emulate D-pad with buttons                (default: off)\n"
            "-N  --noftdi          Don't talk to FTDI (for Leonardo, etc)    (default: off)\n"
            "-P  --passthrough     Pass through data, not just state changes (default: off)\n"
-           "-k  --keyboard [keys] Simulate key presses                      (default: off)\n"
+           "-k  --keyboard [keys] Simulate key presses                      (default: \"default\")\n"
            "-d  --daemon          Become a daemon(background process)       (default: off)\n"
            "-D  --hwid <vid:pid>  Use <vid:pid> as vendor/product id  (default: 0403:6001)\n"
            "-s  --serialdev <dev> Use <dev> as serial device       (default: /dev/ttyACM0)\n"
@@ -42,6 +43,7 @@ void usage(char *me) {
            "There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS "
            "FOR A PARTICULAR PURPOSE.\n\n",
            VERSION, me);
+    kbd_print_keys();
 }
 
 int main(int argc, char *argv[]) {
@@ -52,7 +54,7 @@ int main(int argc, char *argv[]) {
         {"noaxis",     no_argument,       NULL, 'n'},
         {"noftdi",     no_argument,       NULL, 'N'},
         {"passthrough",no_argument,       NULL, 'P'},
-        {"keyboard",   optional_argument, NULL, 'k'}, // FIXME
+        {"keyboard",   required_argument, NULL, 'k'},
         {"daemon",     no_argument,       NULL, 'd'},
         {"hwid",       required_argument, NULL, 'D'},
         {"serialdev",  required_argument, NULL, 's'},
@@ -65,9 +67,27 @@ int main(int argc, char *argv[]) {
 
     int i;
 
-    pad_t pad[PADS_MAX];
-
     int numpads      = 1;
+    pad_t pad[PADS_MAX];
+    kbdopt_parse("a1:Space,"
+                 "b1:LeftCTRL,"
+                 "start1:Enter,"
+                 "select1:E,"
+                 "up1:Up,"
+                 "down1:Down,"
+                 "left1:Left,"
+                 "right1:Right,"
+                 // Player 2 (super uncomfortable)
+                 "a2:P,"
+                 "b2:O,"
+                 "start2:0,"
+                 "select2:9,"
+                 "up2:Home,"
+                 "down2:End,"
+                 "left2:Delete,"
+                 "right2:PageDown", 
+                 pad, 2);
+
     int emulation_mode = UINPUT_MODE_JOYSTICK;
     int passthrough  = 0;
     int daemonize    = 0;
@@ -98,8 +118,14 @@ int main(int argc, char *argv[]) {
                 passthrough = 1;
                 break;
             case 'k':
-                // TODO get keys from optarg
+                printf("--------------------------------------------------------------------------------------\n");
                 emulation_mode = UINPUT_MODE_KEYBOARD;
+                if(strncasecmp(optarg, "default", strlen("default")) != 0) {
+                    if(kbdopt_parse(optarg, pad, numpads ) != 0) { // FIXME numpads must precede this argument :/
+                        usage(basename(argv[0]));
+                        return(EXIT_FAILURE);
+                    }
+                }
                 break;
             case 'd':
                 daemonize = 1;
@@ -150,10 +176,11 @@ int main(int argc, char *argv[]) {
 
     for(i = 0; i < numpads; i++) {
 
-        memset(&pad[i], 0, sizeof(pad_t));
+        //memset(&pad[i], 0, sizeof(pad_t));
 
         pad[i].num = 1 + i;
         pad[i].fd = uinput_init(pad[i].num, emulation_mode);
+        pad[i].state = pad[i].last = 0;
 
         if(pad[i].fd < 0)
             return(pad[i].fd);

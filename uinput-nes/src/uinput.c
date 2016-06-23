@@ -25,14 +25,14 @@ int uinput_init(int device_number, int mode) {
                            "Up", "Down",  "Left",  "Right"};
 
     int kbdkey[] = {
-            KEY_SPACE,     // A
-            KEY_LEFTCTRL,  // B
-            KEY_ENTER,     // Start
-            KEY_E,         // Select
-            KEY_UP,        // Up
-            KEY_DOWN,      // Down
-            KEY_LEFT,      // Left
-            KEY_RIGHT      // Right
+        KEY_SPACE,     // A
+        KEY_LEFTCTRL,  // B
+        KEY_ENTER,     // Start
+        KEY_E,         // Select
+        KEY_UP,        // Up
+        KEY_DOWN,      // Down
+        KEY_LEFT,      // Left
+        KEY_RIGHT      // Right
     };
 
     int button[] = {
@@ -271,16 +271,26 @@ void uinput_map(pad_t *pad, int mode) {
             break;
 
         case UINPUT_MODE_KEYBOARD:
-            //uinput_send(pad, EV_KEY, KEY_UP,    IS_UP(state));
+#if 0
+            uinput_send(pad, EV_KEY, KEY_UP,    IS_UP(state));
             uinput_send(pad, EV_KEY, KEY_DOWN,  IS_DOWN(state));
             uinput_send(pad, EV_KEY, KEY_LEFT,  IS_LEFT(state));
             uinput_send(pad, EV_KEY, KEY_RIGHT, IS_RIGHT(state));
 
             uinput_send(pad, EV_KEY, KEY_ENTER,     IS_START(state));
             uinput_send(pad, EV_KEY, KEY_E,         IS_SELECT(state));
-            uinput_send(pad, EV_KEY, KEY_UP,     IS_A(state)); // Limbo :P
             uinput_send(pad, EV_KEY, KEY_SPACE,     IS_A(state));
             uinput_send(pad, EV_KEY, KEY_LEFTCTRL,  IS_B(state));
+            uinput_send(pad, EV_KEY, KEY_UP,    IS_UP(state));
+#else
+            uinput_send(pad, EV_KEY, pad->kbdsym[INDEX_DOWN],  IS_DOWN(state));
+            uinput_send(pad, EV_KEY, pad->kbdsym[INDEX_LEFT],  IS_LEFT(state));
+            uinput_send(pad, EV_KEY, pad->kbdsym[INDEX_RIGHT], IS_RIGHT(state));
+            uinput_send(pad, EV_KEY, pad->kbdsym[INDEX_START],  IS_START(state));
+            uinput_send(pad, EV_KEY, pad->kbdsym[INDEX_SELECT], IS_SELECT(state));
+            uinput_send(pad, EV_KEY, pad->kbdsym[INDEX_A],      IS_A(state));
+            uinput_send(pad, EV_KEY, pad->kbdsym[INDEX_B],      IS_B(state));
+#endif
             break;
     }
 

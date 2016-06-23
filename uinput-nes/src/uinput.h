@@ -19,6 +19,7 @@
 #include <fcntl.h>
 #include <linux/input.h>
 #include <linux/uinput.h>
+#include "pad.h"
 
 #define UINPUT_MODE_JOYSTICK            0
 #define UINPUT_MODE_JOYSTICK_NO_AXIS    1
@@ -38,13 +39,6 @@
 // what all of the gamecon drivers use (see src/linux/input/joystick/gamecon.c)
 #define AXIS_MIN        -32767
 #define AXIS_MAX         32767
-
-typedef struct {
-    int fd;
-    int num;
-    uint8_t state;
-    uint8_t last;
-} pad_t;
 
 int  uinput_init(int device_number, int buttons_only);
 void uinput_deinit(pad_t *pad);
