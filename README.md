@@ -5,16 +5,12 @@ This repository contains two co-reliant programs.
 Together they allow you to use up to 4 NES gamepads as standard joysticks
 through a single USB port. On Linux.
 
-You can also use the builtin Linux gamecon driver to use NES gamepads
-via the RS232 serial port. This project is an alternative to that.
-
 You can reach me via github: https://github.com/gammy
 
 Components
 ----------
 
-`uinput-nes`: A Linux userland driver which creates 1-4 standard joystick interfaces 
-representing a real NES gamepad/controller. 
+`uinput-nes`: A Linux userland driver which creates 1-4 standard joystick or keyboard interfaces representing a real NES gamepad/controller.
 It relies on nes_arduino_relay (or something which does the same job) for 
 requesting and receiving controller state data from a virtual serial 
 interface.
@@ -30,9 +26,9 @@ Requirements
 ------------
  * A USB port
  * Linux with uinput support (standard)
- * An Arduino Duemilanove or pin-compatible equivalent
+ * An Arduino Leonardo, Duemilanove or equivalent
  * The Arduino IDE (for programming the Arduino)
- * One or more NES gamepads
+ * One or more NES gamepads or equivalent
 
 Build
 -----
@@ -58,7 +54,6 @@ Connect the NES gamepads to your Arduino like this,
 	          +5V 5 | +5V
 
 Then you need to connect the Arduino to your computer via the USB cable.
-I presume that people who are reading this are mainly interested in using this code for their own purposes; the userland driver is fairly modular in that sense.
 
 ### Software ###
 
@@ -83,6 +78,13 @@ By default it creates a single joystick interface (`js0` if no other joysticks a
 
 Sets up the D-pad (up, down, left, right) as standard buttons (1, 2, 3, 4) rather than axial devices.
 
+`--keyboard`
+This option tells `uinput-nes` to emulate one or more keyboards rather than joysticks. This option requires an argument, which is either the bareword `standard` for the default keyboard map, or a string of keys and values representing the map. Two examples:
+`$./uinput-nes --keyboard standard`
+`$./uinput-nes --keyboard a1:space,b1:leftctrl
+Where `a1` is the `A`-button on controller number 1, `b1` is the same for `B`
+See `--help` for a list of bindable keys.
+
 `--passthrough`
 
 uinput-nes will normally just pass on controller state changes to the uinput subsystem. For example, if A is pressed, that state change("A was pressed down") is sent. If the state of the controller remains the same, nothing is sent. In passthrough mode, all states read are immediately passed on rather than discarded. Some programs such as mednafen require the passthrough option as it expects key repetitions during a certain timeframe in order to set up the controllers. I've so far not come across any other programs requiring it.
@@ -91,7 +93,7 @@ uinput-nes will normally just pass on controller state changes to the uinput sub
 
 Makes uinput-nes a background process, which is appropriate if you want to have it running all the time. 
 
-`--noftdi`
+`--ftdi`
 
-uinput-nes supports non-FTDI serial interfaces as seen on the newer Arduino boards using the Atmega 32u4 microprocessor (ie the `Arduino Leonardo`). Use this option if you have such a board.
+uinput-nes supports the FTDI serial interfaces as seen on the older Arduino boards such as the Leonardo. Use this option if you have such a board.
 

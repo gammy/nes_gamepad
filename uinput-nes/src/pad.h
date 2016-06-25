@@ -37,5 +37,21 @@ enum key_index {
     INDEX_LEFT,
     INDEX_RIGHT
 };
-
+                       
+#define KBDOPT_DEFAULTS "a1:Space," \
+                        "b1:LeftCTRL," \
+                    "start1:Enter," \
+                   "select1:E," \
+                       "up1:Up," \
+                     "down1:Down," \
+                     "left1:Left," \
+                    "right1:Right," \
+                        "a2:P," \
+                        "b2:O," \
+                    "start2:0," \
+                   "select2:9," \
+                       "up2:Home," \
+                     "down2:End," \
+                     "left2:Delete," \
+                    "right2:PageDown"
 #endif

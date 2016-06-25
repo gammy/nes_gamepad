@@ -163,7 +163,8 @@ void kbd_print_keys(void) {
     for(i = 0; i < num_keys - 1; i++) {
         printf("%s, ", kbd_list[i].name);
     }
-    printf("%s.\n", kbd_list[num_keys - 1].name);
+    printf("%s.\n\n", kbd_list[num_keys - 2].name);
+    printf("Default keymap:\n%s\n", KBDOPT_DEFAULTS);
 }
 
 int kbd_get_code(char *name) {

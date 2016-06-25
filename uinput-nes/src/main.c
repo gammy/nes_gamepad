@@ -25,7 +25,7 @@ volatile int busy, interrupt;
 
 void usage(char *me) {
             
-             //|------------------------------------------------------------------------------|
+            //|------------------------------------------------------------------------------|
     printf("uinput-nes v%s\n"
            "Usage: %s [options]\n\n"
            "-p  --pads <number>   Simulate <number> joypads           (default: 1, max: 4)\n"
@@ -33,7 +33,7 @@ void usage(char *me) {
            "-n  --noaxis          Emulate D-pad with buttons                (default: off)\n"
            "-N  --ftdi            Use FTDI interface (older boards)         (default: off)\n"
            "-P  --passthrough     Pass through data, not just state changes (default: off)\n"
-           "-k  --keyboard [keys] Simulate key presses                      (default: \"default\")\n"
+           "-k  --keyboard [keys] Simulate key presses                      (default: off)\n"
            "-d  --daemon          Become a daemon(background process)       (default: off)\n"
            "-D  --hwid <vid:pid>  Use <vid:pid> as vendor/product id  (default: 0403:6001)\n"
            "-s  --serialdev <dev> Use <dev> as serial device       (default: /dev/ttyACM0)\n"
@@ -69,24 +69,8 @@ int main(int argc, char *argv[]) {
 
     int numpads      = 1;
     pad_t pad[PADS_MAX];
-    kbdopt_parse("a1:Space,"
-                 "b1:LeftCTRL,"
-                 "start1:Enter,"
-                 "select1:E,"
-                 "up1:Up,"
-                 "down1:Down,"
-                 "left1:Left,"
-                 "right1:Right,"
-                 // Player 2 (super uncomfortable)
-                 "a2:P,"
-                 "b2:O,"
-                 "start2:0,"
-                 "select2:9,"
-                 "up2:Home,"
-                 "down2:End,"
-                 "left2:Delete,"
-                 "right2:PageDown", 
-                 pad, 2);
+
+    kbdopt_parse(KBDOPT_DEFAULTS, pad, 2);
 
     int emulation_mode = UINPUT_MODE_JOYSTICK;
     int passthrough  = 0;
