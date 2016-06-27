@@ -19,7 +19,7 @@
 int ftdic_iflush(struct ftdi_context *ftdic) {
 
     if(ftdic == NULL) {
-        if(verbose > 1)
+        if(verbosity > 1)
             fprintf(stderr, "ftdic_iflush: Invalid ftdi context passed!\n");
         return(-1);
 
@@ -33,7 +33,7 @@ int ftdic_iflush(struct ftdi_context *ftdic) {
 int ftdic_oflush(struct ftdi_context *ftdic) {
 
     if(ftdic == NULL) {
-        if(verbose > 1)
+        if(verbosity > 1)
             fprintf(stderr, "ftdic_iflush: Invalid ftdi context passed!\n");
         return(-1);
 
