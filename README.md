@@ -79,11 +79,13 @@ By default it creates a single joystick interface (`js0` if no other joysticks a
 Sets up the D-pad (up, down, left, right) as standard buttons (1, 2, 3, 4) rather than axial devices.
 
 `--keyboard`
+
 This option tells `uinput-nes` to emulate one or more keyboards rather than joysticks. This option requires an argument, which is either the bareword `standard` for the default keyboard map, or a string of keys and values representing the map. Two examples:
-`$./uinput-nes --keyboard standard`
-`$./uinput-nes --keyboard a1:space,b1:leftctrl
-Where `a1` is the `A`-button on controller number 1, `b1` is the same for `B`
-See `--help` for a list of bindable keys.
+  * `$./uinput-nes --keyboard standard`
+  * `$./uinput-nes --keyboard a1:space,b1:leftctrl`
+
+  Where `a1` is the `A`-button on controller number 1, `b1` is the same for `B`.
+See `--help` for a list of bindable keys, as well as the default keyboard map.
 
 `--passthrough`
 
