@@ -3,7 +3,7 @@ EXE = uinput-nes
 SHELL = bash
 
 CFLAGS = -Wall -ggdb3
-LFLAGS = -lftdi
+LFLAGS = -lftdi1 # '-lftdi' on older systems
 CC     = gcc
 OBJS   = $(patsubst %.c, %.o, $(wildcard src/*.c))
 
@@ -25,7 +25,7 @@ main-build: pre-build
 
 $(EXE): $(OBJS)
 	@echo -e "\e[4;1m$@\e[0m"
-	$(CC) $(CFLAGS) $(LFLAGS) -o $(EXE) $(OBJS)
+	$(CC) -o $(EXE) $(OBJS) $(LFLAGS)
 
 %.o: %.c
 	@echo -e "\e[4;1m$@\e[0m"

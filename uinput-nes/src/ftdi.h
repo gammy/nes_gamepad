@@ -16,7 +16,7 @@
 #ifndef FTDI_H
 #define FTDI_H
 
-#include <ftdi.h>
+#include <libftdi1/ftdi.h> // <ftdi.h> on older systems
 
 struct ftdi_context *
 bub_init(unsigned int vendor_id,
